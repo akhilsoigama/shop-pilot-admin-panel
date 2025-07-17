@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import DashboardLayoutAccount from "./components/dashboard/Dashboard";
+import { ThemeProvider } from "@/components/theam-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -24,8 +24,16 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <div>
-          <DashboardLayoutAccount/>
-          <main >{children}</main>
+          <main>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              {children}
+            </ThemeProvider>
+          </main>
         </div>
       </body>
     </html>

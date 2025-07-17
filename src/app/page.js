@@ -1,9 +1,11 @@
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import Page from "./dashboard/page";
 
 export default function Home() {
   return (
-    <header>
-      <nav>
-      </nav>
-    </header>
+    <main>
+      <Page />
+    </main>
   );
 }

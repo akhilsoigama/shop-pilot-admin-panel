@@ -1,34 +1,27 @@
 'use client';
-
 import StarterKit from '@tiptap/starter-kit';
-import { useEffect, useState } from 'react';
 import { EditorProvider } from '@tiptap/react';
 import { RHFTipTapMenuBar } from '../common/RHFTipTapMenuBar';
 
 const RFFTiptapEditor = ({ onChange, value, height = '300px' }) => {
-  const [editorContent, setEditorContent] = useState('');
-
-  useEffect(() => {
-    setEditorContent(value || '');
-  }, [value]);
-
   return (
     <div className="w-full">
       <EditorProvider
-        key={editorContent}
         extensions={[StarterKit]}
-        content={editorContent}
+        content={value || ''}
         onUpdate={({ editor }) => {
-          const html = editor.getHTML();
-          setEditorContent(html);
-          onChange(html);
+          if (typeof onChange === 'function') {
+            onChange(editor.getHTML()); 
+          }
         }}
         editorProps={{
           attributes: {
-            class: `border rounded-md h-auto bg-white dark:bg-zinc-800 px-8 py-5 min-h-[${height}] focus:outline-none`,
+            style: { minHeight: height },
+            class: `border rounded-md h-[200px] bg-white dark:bg-zinc-800 px-8 py-5 focus:outline-none`,
           },
         }}
         slotBefore={<RHFTipTapMenuBar />}
+        immediatelyRender={false}
       />
     </div>
   );

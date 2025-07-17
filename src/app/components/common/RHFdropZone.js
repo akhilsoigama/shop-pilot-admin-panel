@@ -2,17 +2,22 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import imageCompression from 'browser-image-compression';
-import { Box, Typography, IconButton, Grid } from '@mui/material';
+import { Box, Typography, IconButton, Grid, CircularProgress } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const ImageDropZone = ({
   value = [],
   onChange,
   placeholderText = 'Drag & drop images here, or click to select',
-  maxSize = 5 * 1024 * 1024,
+  maxSize = 5 * 1024 * 1024, // 5MB
   maxFiles = 5,
+  height = '300px',
+  width = '100%'
 }) => {
   const [images, setImages] = useState([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const convertToBase64 = (file) =>
     new Promise((resolve, reject) => {
@@ -33,26 +38,36 @@ const ImageDropZone = ({
 
   const onDrop = async (acceptedFiles, fileRejections) => {
     if (fileRejections.length) {
-      alert('Some files were rejected due to size or format.');
+      alert(`Some files were rejected. Max size: ${maxSize/1024/1024}MB, allowed types: jpg, png, gif, webp`);
     }
 
-    const validFiles = acceptedFiles.slice(0, maxFiles - images.length);
-    const newImages = [];
+    if (images.length >= maxFiles) return;
 
-    for (let file of validFiles) {
-      try {
-        const compressed = await compressImage(file);
-        const base64 = await convertToBase64(compressed);
-        const preview = URL.createObjectURL(compressed);
-        newImages.push({ file: compressed, preview, base64 });
-      } catch (err) {
-        console.error('Compression error:', err);
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const validFiles = acceptedFiles.slice(0, maxFiles - images.length);
+      const newImages = [];
+
+      for (const file of validFiles) {
+        try {
+          const compressed = await compressImage(file);
+          const base64 = await convertToBase64(compressed);
+          const preview = URL.createObjectURL(compressed);
+          newImages.push({ file: compressed, preview, base64 });
+        } catch (err) {
+          console.error('Image processing error:', err);
+        }
       }
-    }
 
-    const updatedImages = [...images, ...newImages];
-    setImages(updatedImages);
-    onChange(updatedImages.map((img) => img.base64));
+      const updatedImages = [...images, ...newImages];
+      setImages(updatedImages);
+      onChange(updatedImages.map((img) => img.base64));
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(0);
+    }
   };
 
   const dropzoneProps = useMemo(() => ({
@@ -66,14 +81,15 @@ const ImageDropZone = ({
     maxFiles,
     multiple: true,
     onDrop,
-  }), [images.length, maxSize, maxFiles]);
+    disabled: isUploading || images.length >= maxFiles
+  }), [images.length, maxSize, maxFiles, isUploading]);
 
-  const { getRootProps, getInputProps } = useDropzone(dropzoneProps);
+  const { getRootProps, getInputProps, isDragActive } = useDropzone(dropzoneProps);
 
   const handleRemove = (index) => {
     const newList = [...images];
     const removed = newList.splice(index, 1);
-    if (removed[0]?.preview && removed[0]?.file) {
+    if (removed[0]?.preview) {
       URL.revokeObjectURL(removed[0].preview);
     }
     setImages(newList);
@@ -81,21 +97,20 @@ const ImageDropZone = ({
   };
 
   useEffect(() => {
-    // Hydrate previews from base64 if externally set
-    if (Array.isArray(value) && value.length > 0) {
+    // Hydrate from external value
+    if (Array.isArray(value)) {
       const hydrated = value.map((base64) => ({
         preview: base64,
         file: null,
         base64,
       }));
       setImages(hydrated);
-    } else {
-      setImages([]);
     }
   }, [value]);
 
   useEffect(() => {
     return () => {
+      // Clean up object URLs
       images.forEach((img) => {
         if (img.preview && img.file) {
           URL.revokeObjectURL(img.preview);
@@ -105,54 +120,116 @@ const ImageDropZone = ({
   }, [images]);
 
   return (
-    <Box>
+    <Box sx={{ width, height }}>
       <Box
         {...getRootProps()}
-        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors duration-300 ${
-          images.length >= maxFiles ? 'border-gray-300 bg-gray-100' : 'border-gray-300 hover:border-blue-500'
-        }`}
+        sx={{
+          border: '2px dashed',
+          borderRadius: '8px',
+          p: 3,
+          textAlign: 'center',
+          cursor: images.length >= maxFiles ? 'not-allowed' : 'pointer',
+          transition: 'all 0.3s ease',
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          backgroundColor: isDragActive ? 'action.hover' : 'background.paper',
+          borderColor: isDragActive ? 'primary.main' : 'divider',
+          '&:hover': {
+            borderColor: images.length >= maxFiles ? 'divider' : 'primary.main',
+          }
+        }}
       >
-        <input {...getInputProps()} disabled={images.length >= maxFiles} />
-        {images.length > 0 ? (
-          <Grid container spacing={2}>
+        <input {...getInputProps()} />
+        
+        {isUploading ? (
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <CircularProgress 
+              variant="indeterminate"
+              size={60}
+              thickness={4}
+            />
+            <Typography variant="body2" sx={{ mt: 2 }}>
+              Uploading...
+            </Typography>
+          </Box>
+        ) : images.length > 0 ? (
+          <Grid container spacing={2} sx={{ maxHeight: '100%', overflow: 'auto' }}>
             {images.map((img, index) => (
-              <Grid item xs={6} sm={4} md={3} key={index} className="relative">
-                <Box className="relative">
-                  <img
+              <Grid item xs={6} sm={4} md={3} key={index}>
+                <Box sx={{ position: 'relative', height: 120 }}>
+                  <Box
+                    component="img"
                     src={img.preview}
-                    alt={`Uploaded ${index}`}
-                    className="w-full h-32 object-cover rounded-lg"
+                    alt={`Preview ${index + 1}`}
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      borderRadius: '4px',
+                      border: '1px solid',
+                      borderColor: 'divider'
+                    }}
                   />
                   <IconButton
                     onClick={(e) => {
                       e.stopPropagation();
                       handleRemove(index);
                     }}
-                    className="absolute top-1 right-1 bg-white hover:bg-gray-100"
+                    sx={{
+                      position: 'absolute',
+                      top: 4,
+                      right: 4,
+                      backgroundColor: 'background.paper',
+                      '&:hover': {
+                        backgroundColor: 'action.hover'
+                      }
+                    }}
                     size="small"
                   >
-                    <DeleteIcon className="text-red-500" />
+                    <DeleteIcon color="error" fontSize="small" />
                   </IconButton>
                 </Box>
               </Grid>
             ))}
+            {images.length < maxFiles && (
+              <Grid item xs={6} sm={4} md={3}>
+                <Box sx={{
+                  border: '1px dashed',
+                  borderColor: 'divider',
+                  borderRadius: '4px',
+                  height: 120,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  backgroundColor: 'action.hover'
+                }}>
+                  <CloudUploadIcon color="action" />
+                  <Typography variant="caption" color="text.secondary">
+                    Add more
+                  </Typography>
+                </Box>
+              </Grid>
+            )}
           </Grid>
         ) : (
-          <Box>
-            <img
-              src="https://i.pinimg.com/originals/56/74/51/5674515621e872310e356243db78b14f.gif"
-              alt="Upload Placeholder"
-              className="w-full h-32 object-contain"
-            />
-            <Typography variant="body1" className="mt-2 text-gray-500">
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <CloudUploadIcon sx={{ fontSize: 48, color: 'action.active', mb: 1 }} />
+            <Typography variant="body1" color="text.secondary" gutterBottom>
               {placeholderText}
+            </Typography>
+            <Typography variant="caption" color="text.disabled">
+              Supported formats: JPG, PNG, GIF, WEBP (Max {maxSize/1024/1024}MB each)
             </Typography>
           </Box>
         )}
       </Box>
-      {images.length >= maxFiles && (
-        <Typography variant="caption" className="text-sm text-gray-500 mt-2 block text-center">
-          Max {maxFiles} image(s) allowed.
+      
+      {images.length > 0 && (
+        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+          {images.length}/{maxFiles} images uploaded
         </Typography>
       )}
     </Box>

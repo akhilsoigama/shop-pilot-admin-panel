@@ -1,12 +1,12 @@
+'use client'
 import React from 'react';
 import { Controller } from 'react-hook-form';
 import { FormControl, FormHelperText, FormLabel, Typography } from '@mui/material';
-import ImageDropZone from '../DropZone';
+import ImageDropZone from '../common/RHFdropZone';
 
 const RHFDropzoneField = ({
   control,
   name = 'image',
-  label = 'Upload Image',
   helperText,
   rules = { required: 'Image is required' },
   defaultValue = null,
@@ -14,9 +14,6 @@ const RHFDropzoneField = ({
 }) => {
   return (
     <FormControl fullWidth error={Boolean(errors?.[name])} className="mb-6">
-      <FormLabel className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-200">
-        {label}
-      </FormLabel>
 
       <Controller
         name={name}
@@ -36,7 +33,7 @@ const RHFDropzoneField = ({
         )}
       />
 
-      <FormHelperText className="text-xs mt-1">
+      <FormHelperText className="text-xs mt-1 dark:text-gray-300">
         {errors?.[name]?.message || helperText}
       </FormHelperText>
     </FormControl>

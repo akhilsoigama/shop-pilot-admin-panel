@@ -11,9 +11,12 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@hookform/resolvers": "^5.1.1",
     "@mui/icons-material": "^7.2.0",
     "@mui/material": "^7.2.0",
     "@radix-ui/react-slot": "^1.2.3",
+    "@tiptap/core": "^3.0.1",
+    "@tiptap/react": "^3.0.1",
     "@toolpad/core": "^0.16.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -22,10 +25,15 @@
     "next": "15.3.5",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "tailwind-merge": "^3.3.1"
+    "react-dropzone": "^14.3.8",
+    "react-hook-form": "^7.60.0",
+    "sonner": "^2.0.6",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/react": "^19.1.8",
     "tailwindcss": "^4",
     "tw-animate-css": "^1.3.5"
   }

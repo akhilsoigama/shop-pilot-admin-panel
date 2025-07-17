@@ -1,11 +1,5 @@
-import { AppSidebar } from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import Page from "./dashboard/page";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <main>
-      <Page />
-    </main>
-  );
+  redirect("/dashboard");
 }

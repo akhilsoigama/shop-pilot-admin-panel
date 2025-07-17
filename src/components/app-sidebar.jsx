@@ -31,10 +31,10 @@ const data = {
   user: {
     name: "shadcn",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "",
   },
   // teams: [
-  //   {
+  //   
   //     name: "Acme Inc",
   //     logo: GalleryVerticalEnd,
   //     plan: "Enterprise",
@@ -52,7 +52,7 @@ const data = {
   // ],
   navMain: [
     {
-      title: "Playground",
+      title: "Overview",
       url: "#",
       icon: SquareTerminal,
       isActive: true,
@@ -72,20 +72,16 @@ const data = {
       ],
     },
     {
-      title: "Models",
+      title: "Products",
       url: "#",
       icon: Bot,
       items: [
         {
-          title: "Genesis",
-          url: "#",
+          title: "Add Products",
+          url: "/dashboard/addProducts",
         },
         {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
+          title: "List",
           url: "#",
         },
       ],

@@ -10,14 +10,17 @@ const ProductSchema = new mongoose.Schema({
     inStock: { type: Boolean, required: true },
     productImage: {
         type: [String],
-        validate: [arrayLimit, 'Exactly 5 images are required'],
+        validate: {
+            validator: arrayLimit,
+            message: 'Maximum 5 images are allowed'
+        },
         required: true
     },
     productDescription: { type: String, required: true },
-}, { timestamps: true })
+}, { timestamps: true });
 
 function arrayLimit(val) {
-    return val.length === 5;
+    return val.length <= 5 && val.length >= 1;
 }
 
 export default mongoose.models.Product || mongoose.model("Product", ProductSchema);

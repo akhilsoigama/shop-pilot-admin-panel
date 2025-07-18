@@ -10,6 +10,7 @@ import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
 import RHFContentFiled from '@/app/components/controllers/RHFContentField';
 import { useProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
+import { RHFDropdown } from '@/app/components/controllers/RHFDropdown';
 
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
@@ -73,7 +74,7 @@ const AddProductsNewEditForm = ({ productData }) => {
           productDescription: '',
           inStock: true,
           discount: 0,
-          productImage: null // Explicitly reset image field
+          productImage: null
         });
 
         if (typeof window !== 'undefined') {
@@ -109,7 +110,6 @@ const AddProductsNewEditForm = ({ productData }) => {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
-        {/* Basic Information Section */}
         <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <FiInfo className="text-blue-500" /> Basic Information
@@ -122,28 +122,12 @@ const AddProductsNewEditForm = ({ productData }) => {
               icon={<FiTag />}
               error={errors.productName}
             />
-            <Controller
-              control={control}
+            <RHFDropdown
               name="category"
-              render={({ field }) => (
-                <div className="flex flex-col">
-                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
-                  <select
-                    {...field}
-                    className="p-2 rounded-md border dark:border-neutral-700 dark:bg-neutral-800 bg-white text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    <option value="">Select a category</option>
-                    {categories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.category && (
-                    <span className="text-sm text-red-500 mt-1">{errors.category.message}</span>
-                  )}
-                </div>
-              )}
+              label='Category'
+              control={control}
+              errors={errors}
+              categories={categories}
             />
             <RHFFormField
               name="productKey"
@@ -206,6 +190,7 @@ const AddProductsNewEditForm = ({ productData }) => {
         <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">📝 Product Description</h2>
           <RHFContentFiled
+            key={watch('productDescription')}
             name="productDescription"
             control={control}
             error={errors.productDescription}

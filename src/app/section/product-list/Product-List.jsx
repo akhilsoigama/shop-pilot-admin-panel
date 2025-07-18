@@ -3,27 +3,12 @@
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-
-const products = [
-  {
-    id: '1',
-    title: 'Apple AirPods Pro 2nd gen',
-    category: 'Earphone',
-    price: '₹399.99',
-    image: '/airpods.png',
-  },
-  {
-    id: '2',
-    title: 'Canon EOS R5',
-    category: 'Camera',
-    price: '₹3899.99',
-    image: '/canon.png',
-  },
-  
-]
+import { useProducts } from '@/hooks/useProducts'
 
 export default function ProductList() {
   const router = useRouter()
+  const { products } = useProducts()
+  const data = products || []
 
   return (
     <motion.div
@@ -34,7 +19,7 @@ export default function ProductList() {
     >
       <h2 className="text-2xl font-bold mb-6">All Products</h2>
 
-      {products.length === 0 ? (
+      {data.length === 0 ? (
         <div className="text-center py-20 text-gray-500 dark:text-gray-400 text-lg">
           No products found.
         </div>
@@ -50,28 +35,32 @@ export default function ProductList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {products.map((product) => (
+              {data.map((product) => (
                 <tr
-                  key={product.id}
+                  key={product._id}
                   className="transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                 >
                   <td className="p-4 flex items-center gap-4">
                     <div className="w-12 h-12 overflow-hidden rounded-lg">
                       <img
-                        src={product.image}
-                        alt={product.title}
+                        src={product.productImage[0]}
+                        alt={product.productName}
                         className="w-full h-full object-cover transform transition-transform duration-200 hover:scale-105"
                       />
                     </div>
-                    <span className="font-medium text-gray-800 dark:text-gray-100">{product.title}</span>
+                    <span className="font-medium text-gray-800 dark:text-gray-100">
+                      {product.productName}
+                    </span>
                   </td>
                   <td className="p-4 text-gray-600 dark:text-gray-300">{product.category}</td>
-                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">{product.price}</td>
+                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
+                    ₹{product.price}
+                  </td>
                   <td className="p-4">
                     <Button
                       variant="default"
                       className="bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-                      onClick={() => router.push(`/products/${product.id}`)}
+                      onClick={() => router.push(`/products/${product._id}`)}
                     >
                       Visit
                     </Button>

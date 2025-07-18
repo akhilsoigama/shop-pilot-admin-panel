@@ -156,15 +156,15 @@ export function AppSidebar({
   ...props
 }) {
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" {...props} className='scrollbar-hide'>
       <SidebarHeader>
         {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className='scrollbar-hide'>
         <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
       </SidebarContent>
-      <SidebarFooter>
+      <SidebarFooter className='scrollbar-hide'>
         <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />

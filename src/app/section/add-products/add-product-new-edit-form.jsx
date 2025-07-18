@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons/fi';
@@ -21,6 +21,13 @@ const productSchema = z.object({
   discount: z.number().min(0).max(100).optional(),
 });
 
+const categories = [
+  'Electronics',
+  'Fashion & Apparel',
+  'Home & Kitchen',
+  'Beauty & Personal Care',
+  'Health & Wellness',
+]
 
 const AddProductsNewEditForm = () => {
   const { control, handleSubmit, formState: { errors }, watch } = useForm({
@@ -36,9 +43,55 @@ const AddProductsNewEditForm = () => {
     }
   });
 
-  const onSubmit = () => {
-    console.log('Form Data:', data);
-    // Add your form submission logic here
+ const handleImageUpload = async (files) => {
+    if (files.length !== 4) return toast.error('Exactly 4 images required');
+
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    const tooLarge = [...files].some((file) => file.size > 5 * 1024 * 1024);
+
+    if (tooLarge) return toast.error('Each image must be less than 5MB');
+    if (![...files].every((file) => validTypes.includes(file.type)))
+      return toast.error('Only JPG, JPEG, PNG formats are allowed');
+
+    const imageUrls = [];
+
+    for (const file of files) {
+      const reader = new FileReader();
+      const promise = new Promise((resolve, reject) => {
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+      });
+      reader.readAsDataURL(file);
+
+      const base64 = await promise;
+      const res = await axios.post('/api/image-upload', { image: base64 });
+      imageUrls.push(res.data.url);
+    }
+
+    return imageUrls;
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      const uploadedImages = await handleImageUpload(data.productImage);
+
+      const productPayload = {
+        productName: data.productName,
+        category: data.category,
+        productKey: data.productKey,
+        price: data.price,
+        discount: data.discount,
+        productDescription: data.productDescription,
+        productImage: uploadedImages,
+        inStock: data.inStock,
+      };
+
+      await axios.post('/api/products', productPayload);
+      toast.success('Product added successfully!');
+    } catch (error) {
+      console.error(error);
+      toast.error('Error adding product');
+    }
   };
 
   const price = watch('price');
@@ -75,11 +128,28 @@ const AddProductsNewEditForm = () => {
               icon={<FiTag />}
               error={errors.productName}
             />
-            <RHFFormField
-              name="category"
+            <Controller
               control={control}
-              label="Category"
-              error={errors.category}
+              name="category"
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                  <select
+                    {...field}
+                    className="p-2 rounded-md border dark:border-neutral-700 dark:bg-neutral-800 bg-white text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.category && (
+                    <span className="text-sm text-red-500 mt-1">{errors.category.message}</span>
+                  )}
+                </div>
+              )}
             />
             <RHFFormField
               name="productKey"

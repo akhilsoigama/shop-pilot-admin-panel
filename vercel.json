@@ -1,12 +1,19 @@
 {
     "version": 2,
     "builds": [
-      {
-        "src": "package.json",
-        "use": "@vercel/next",
-        "config": {
-          "includeFiles": ["node_modules/lightningcss/**/*"]
+        {
+            "src": "package.json",
+            "use": "@vercel/next",
+            "config": {
+                "nodeVersion": "22.x",
+                "distDir": ".next"
+            }
         }
-      }
-    ]
-  }
+    ],
+    "build": {
+        "env": {
+            "NODE_ENV": "production",
+            "NODE_OPTIONS": "--openssl-legacy-provider"
+        }
+    }
+}

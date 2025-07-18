@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    
-    "build": "npm rebuild lightningcss --update-binary && next build",
+    "postinstall": "npm rebuild lightningcss --platform=linuxmusl --arch=x64",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -38,6 +38,7 @@
     "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.23.5",
+    "lightningcss": "^1.21.5",
     "lucide-react": "^0.525.0",
     "mongoose": "^8.16.4",
     "next": "15.3.5",
@@ -52,6 +53,7 @@
     "stripe": "^18.3.0",
     "swr": "^2.3.4",
     "tailwind-merge": "^3.3.1",
+    "vercel": "^44.4.3",
     "zod": "^4.0.5"
   },
   "devDependencies": {

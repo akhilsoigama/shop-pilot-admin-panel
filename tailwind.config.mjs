@@ -10,6 +10,7 @@ export default {
 		// "./node_modules/@heroui/theme/dist/components/(image|avatar|card|ripple).js",
 
 	],
+	
 	theme: {
 		extend: {
 			colors: {

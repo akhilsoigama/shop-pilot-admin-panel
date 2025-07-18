@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import {
-  BookOpen,
   Bot,
   Frame,
   Map,
@@ -29,23 +28,6 @@ const data = {
     email: "m@example.com",
     avatar: "",
   },
-  // teams: [
-  //   
-  //     name: "Acme Inc",
-  //     logo: GalleryVerticalEnd,
-  //     plan: "Enterprise",
-  //   },
-  //   {
-  //     name: "Acme Corp.",
-  //     logo: AudioWaveform,
-  //     plan: "Startup",
-  //   },
-  //   {
-  //     name: "Evil Corp.",
-  //     logo: Command,
-  //     plan: "Free",
-  //   },
-  // ],
   navMain: [
     {
       title: "Products",
@@ -58,7 +40,7 @@ const data = {
         },
         {
           title: "List",
-          url: "#",
+          url: "/dashboard/product",
         },
       ],
     },
@@ -116,7 +98,6 @@ export function AppSidebar({
   return (
     <Sidebar collapsible="icon" {...props} className='scrollbar-hide'>
       <SidebarHeader>
-        {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent className='scrollbar-hide'>
         <NavProjects projects={data.projects} />

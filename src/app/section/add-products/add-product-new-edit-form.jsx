@@ -14,11 +14,11 @@ const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
   category: z.string().min(1, 'Category is required'),
   productKey: z.string().min(3, 'Product key must be at least 3 characters'),
-  price: z.number().min(0.01, 'Price must be greater than 0'),
+  price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
   productImage: z.any().refine((file) => file !== null, 'Image is required'),
   productDescription: z.string().min(10, 'Description must be at least 10 characters'),
   inStock: z.boolean().default(true),
-  discount: z.number().min(0).max(100).optional(),
+  discount: z.coerce.number().min(0).max(100).optional(),
 });
 
 

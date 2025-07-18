@@ -17,7 +17,7 @@ const RFFTiptapEditor = ({ onChange, value, height = '300px' }) => {
         editorProps={{
           attributes: {
             style: { minHeight: height },
-            class: `border rounded-md h-[200px] bg-white dark:bg-zinc-800 px-8 py-5 focus:outline-none`,
+            class: `border rounded-md h-[200px] scrollbar-hide overflow-auto sid bg-white dark:bg-zinc-800 px-8 py-5 focus:outline-none`,
           },
         }}
         slotBefore={<RHFTipTapMenuBar />}

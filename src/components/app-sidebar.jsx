@@ -2,12 +2,9 @@
 
 import * as React from "react"
 import {
-  AudioWaveform,
   BookOpen,
   Bot,
-  Command,
   Frame,
-  GalleryVerticalEnd,
   Map,
   PieChart,
   Settings2,
@@ -17,7 +14,6 @@ import {
 import { NavMain } from "@/components/nav-main"
 import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
-import { TeamSwitcher } from "@/components/team-switcher"
 import {
   Sidebar,
   SidebarContent,
@@ -52,26 +48,6 @@ const data = {
   // ],
   navMain: [
     {
-      title: "Overview",
-      url: "#",
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: "History",
-          url: "/dashboard/history-page",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
       title: "Products",
       url: "#",
       icon: Bot,
@@ -82,29 +58,6 @@ const data = {
         },
         {
           title: "List",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
           url: "#",
         },
       ],
@@ -135,6 +88,11 @@ const data = {
   ],
   projects: [
     {
+      name: "Overview",
+      url: "/dashboard/overview",
+      icon: SquareTerminal,
+    },
+    {
       name: "Design Engineering",
       url: "#",
       icon: Frame,
@@ -161,8 +119,8 @@ export function AppSidebar({
         {/* <TeamSwitcher teams={data.teams} /> */}
       </SidebarHeader>
       <SidebarContent className='scrollbar-hide'>
-        <NavMain items={data.navMain} />
         <NavProjects projects={data.projects} />
+        <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter className='scrollbar-hide'>
         <NavUser user={data.user} />

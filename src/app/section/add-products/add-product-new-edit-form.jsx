@@ -63,7 +63,7 @@ const AddProductsNewEditForm = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
         {/* Basic Information Section */}
-        <section className="bg-gray-50 dark:bg-neutral-800 p-2 rounded-lg">
+        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <FiInfo className="text-blue-500" /> Basic Information
           </h2>
@@ -127,8 +127,7 @@ const AddProductsNewEditForm = () => {
           </div>
         </section>
 
-        {/* Product Image Section */}
-        <section className="bg-gray-50 dark:bg-neutral-800 p-2 rounded-lg">
+        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <FiImage className="text-blue-500" /> Product Image
           </h2>
@@ -139,8 +138,7 @@ const AddProductsNewEditForm = () => {
           />
         </section>
 
-        {/* Description Section */}
-        <section className="bg-gray-50 dark:bg-neutral-800 p-2 rounded-lg">
+        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">📝 Product Description</h2>
           <RHFContentFiled
             name="productDescription"

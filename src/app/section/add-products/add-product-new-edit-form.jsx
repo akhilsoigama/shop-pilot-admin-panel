@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -8,16 +8,15 @@ import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
 import RHFContentFiled from '@/app/components/controllers/RHFContentField';
+import { useProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
-import axios from 'axios';
 
-// Zod schema for form validation
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
   category: z.string().min(1, 'Category is required'),
   productKey: z.string().min(3, 'Product key must be at least 3 characters'),
   price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
-  productImage: z.any().refine((file) => file !== null, 'Image is required'),
+  productImage: z.array(z.string().url()).min(1, "At least one image is required"),
   productDescription: z.string().min(10, 'Description must be at least 10 characters'),
   inStock: z.boolean().default(true),
   discount: z.coerce.number().min(0).max(100).optional(),
@@ -31,8 +30,12 @@ const categories = [
   'Health & Wellness',
 ]
 
-const AddProductsNewEditForm = () => {
-  const { control, handleSubmit, formState: { errors }, watch } = useForm({
+const AddProductsNewEditForm = ({ productData }) => {
+
+  const { createProduct, updateProduct } = useProducts();
+  const isEditMode = !!productData?._id;
+
+  const { control, handleSubmit, reset, formState: { errors }, watch } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
       productName: '',
@@ -40,65 +43,54 @@ const AddProductsNewEditForm = () => {
       productKey: '',
       price: 0,
       productDescription: '',
+      productImage: null,
       inStock: true,
       discount: 0,
     }
   });
+  useEffect(() => {
 
- const handleImageUpload = async (files) => {
-    if (files.length !== 4) return toast.error('Exactly 4 images required');
-
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg' ,'image/webp' ];
-    const tooLarge = [...files].some((file) => file.size > 5 * 1024 * 1024);
-
-    if (tooLarge) return toast.error('Each image must be less than 5MB');
-    if (![...files].every((file) => validTypes.includes(file.type)))
-      return toast.error('Only JPG, JPEG, PNG, and WebP formats are allowed');
-
-    const imageUrls = [];
-
-    for (const file of files) {
-      const reader = new FileReader();
-      const promise = new Promise((resolve, reject) => {
-        reader.onloadend = () => resolve(reader.result);
-        reader.onerror = reject;
-      });
-      reader.readAsDataURL(file);
-
-      const base64 = await promise;
-      const res = await axios.post('/api/image-upload', { image: base64 });
-      imageUrls.push(res.data.url);
+    if (productData) {
+      reset(productData);
     }
-
-    return imageUrls;
-  };
-
+  }, [productData, reset]);
+  // Modify your onSubmit function
   const onSubmit = async (data) => {
     try {
-      const uploadedImages = await handleImageUpload(data.productImage);
+      if (isEditMode) {
+        await updateProduct(productData._id, data);
+        toast.success('Product updated successfully!');
+      } else {
+        await createProduct(data);
+        toast.success('Product created successfully!');
 
-      const productPayload = {
-        productName: data.productName,
-        category: data.category,
-        productKey: data.productKey,
-        price: data.price,
-        discount: data.discount,
-        productDescription: data.productDescription,
-        productImage: uploadedImages,
-        inStock: data.inStock,
-      };
+        // Enhanced reset
+        reset({
+          productName: '',
+          category: '',
+          productKey: '',
+          price: 0,
+          productDescription: '',
+          inStock: true,
+          discount: 0,
+          productImage: null // Explicitly reset image field
+        });
 
-      await axios.post('/api/product', productPayload);
-      toast.success('Product added successfully!');
+        if (typeof window !== 'undefined') {
+          const dropzone = document.querySelector('.dropzone');
+          if (dropzone) dropzone.innerHTML = '';
+        }
+      }
     } catch (error) {
-      console.error(error);
-      toast.error('Error adding product');
+      toast.error(error.response?.data?.message ||
+        `Failed to ${isEditMode ? 'update' : 'create'} product`);
     }
   };
 
   const price = watch('price');
   const discount = watch('discount') || 0;
   const discountedPrice = price - (price * (discount / 100));
+
 
   return (
     <motion.div
@@ -204,6 +196,7 @@ const AddProductsNewEditForm = () => {
             <FiImage className="text-blue-500" /> Product Image
           </h2>
           <RHFDropzoneField
+            key={watch('productImage')}
             name="productImage"
             control={control}
             error={errors.productImage}

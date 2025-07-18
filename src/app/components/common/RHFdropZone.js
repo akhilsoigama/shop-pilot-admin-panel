@@ -10,23 +10,37 @@ const ImageDropZone = ({
   value = [],
   onChange,
   placeholderText = 'Drag & drop images here, or click to select',
-  maxSize = 5 * 1024 * 1024, // 5MB
+  maxSize = 5 * 1024 * 1024, 
   maxFiles = 5,
   height = '300px',
-  width = '100%'
+  width = '100%',
+  multiple = false,
 }) => {
   const [images, setImages] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const convertToBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-      reader.readAsDataURL(file);
-    });
+  // Upload to Cloudinary
+  const uploadToCloudinary = async (file) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET);
+    
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
 
+    if (!response.ok) {
+      throw new Error('Failed to upload image to Cloudinary');
+    }
+
+    return await response.json();
+  };
+
+  // Compress image before upload
   const compressImage = async (file) => {
     const options = {
       maxSizeMB: 1,
@@ -36,41 +50,94 @@ const ImageDropZone = ({
     return await imageCompression(file, options);
   };
 
+  // Handle dropped files
   const onDrop = async (acceptedFiles, fileRejections) => {
-    if (fileRejections.length) {
-      alert(`Some files were rejected. Max size: ${maxSize/1024/1024}MB, allowed types: jpg, png, gif, webp`);
+    if (fileRejections.length > 0) {
+      alert(`Some files were rejected. Max size: ${maxSize/1024/1024}MB`);
+      return;
     }
 
     if (images.length >= maxFiles) return;
 
     setIsUploading(true);
-    setUploadProgress(0);
 
     try {
       const validFiles = acceptedFiles.slice(0, maxFiles - images.length);
       const newImages = [];
-
+  
       for (const file of validFiles) {
         try {
           const compressed = await compressImage(file);
-          const base64 = await convertToBase64(compressed);
+          const cloudinaryResponse = await uploadToCloudinary(compressed);
           const preview = URL.createObjectURL(compressed);
-          newImages.push({ file: compressed, preview, base64 });
+  
+          newImages.push({
+            file: compressed,
+            preview,
+            cloudinaryUrl: cloudinaryResponse.secure_url,
+            publicId: cloudinaryResponse.public_id
+          });
         } catch (err) {
-          console.error('Image processing error:', err);
+          console.error('Error processing image:', err);
         }
       }
-
+  
       const updatedImages = [...images, ...newImages];
       setImages(updatedImages);
-      onChange(updatedImages.map((img) => img.base64));
+  
+      // Return array of URLs to parent component
+      onChange(updatedImages.map(img => img.cloudinaryUrl));
     } finally {
       setIsUploading(false);
-      setUploadProgress(0);
     }
   };
 
-  const dropzoneProps = useMemo(() => ({
+  // Remove image
+  const handleRemove = async (index) => {
+    const imageToRemove = images[index];
+    const newImages = [...images];
+    newImages.splice(index, 1);
+    
+    // Revoke object URL
+    if (imageToRemove.preview) {
+      URL.revokeObjectURL(imageToRemove.preview);
+    }
+
+    setImages(newImages);
+    
+    // Update parent with remaining URLs
+    const urlsToSend = newImages.map(img => img.cloudinaryUrl);
+    onChange(multiple ? urlsToSend : urlsToSend[0] || '');
+  };
+
+  // Initialize with existing values
+  useEffect(() => {
+    if (value) {
+      const initialImages = (Array.isArray(value) ? value : [value])
+        .filter(url => url)
+        .map(url => ({
+          cloudinaryUrl: url,
+          preview: url, // For existing images, use the URL as preview
+          file: null,
+          publicId: null
+        }));
+      setImages(initialImages);
+    }
+  }, [value]);
+
+  // Clean up object URLs
+  useEffect(() => {
+    return () => {
+      images.forEach(img => {
+        if (img.preview && img.file) {
+          URL.revokeObjectURL(img.preview);
+        }
+      });
+    };
+  }, [images]);
+
+  // Dropzone configuration
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
     accept: {
       'image/jpeg': ['.jpeg', '.jpg'],
       'image/png': ['.png'],
@@ -79,45 +146,10 @@ const ImageDropZone = ({
     },
     maxSize,
     maxFiles,
-    multiple: true,
+    multiple,
     onDrop,
     disabled: isUploading || images.length >= maxFiles
-  }), [images.length, maxSize, maxFiles, isUploading]);
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone(dropzoneProps);
-
-  const handleRemove = (index) => {
-    const newList = [...images];
-    const removed = newList.splice(index, 1);
-    if (removed[0]?.preview) {
-      URL.revokeObjectURL(removed[0].preview);
-    }
-    setImages(newList);
-    onChange(newList.map((img) => img.base64));
-  };
-
-  useEffect(() => {
-    // Hydrate from external value
-    if (Array.isArray(value)) {
-      const hydrated = value.map((base64) => ({
-        preview: base64,
-        file: null,
-        base64,
-      }));
-      setImages(hydrated);
-    }
-  }, [value]);
-
-  useEffect(() => {
-    return () => {
-      // Clean up object URLs
-      images.forEach((img) => {
-        if (img.preview && img.file) {
-          URL.revokeObjectURL(img.preview);
-        }
-      });
-    };
-  }, [images]);
+  });
 
   return (
     <Box sx={{ width, height }}>
@@ -145,14 +177,8 @@ const ImageDropZone = ({
         
         {isUploading ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-            <CircularProgress 
-              variant="indeterminate"
-              size={60}
-              thickness={4}
-            />
-            <Typography variant="body2" sx={{ mt: 2 }}>
-              Uploading...
-            </Typography>
+            <CircularProgress size={60} thickness={4} />
+            <Typography variant="body2" sx={{ mt: 2 }}>Uploading...</Typography>
           </Box>
         ) : images.length > 0 ? (
           <Grid container spacing={2} sx={{ maxHeight: '100%', overflow: 'auto' }}>
@@ -182,9 +208,7 @@ const ImageDropZone = ({
                       top: 4,
                       right: 4,
                       backgroundColor: 'background.paper',
-                      '&:hover': {
-                        backgroundColor: 'action.hover'
-                      }
+                      '&:hover': { backgroundColor: 'action.hover' }
                     }}
                     size="small"
                   >

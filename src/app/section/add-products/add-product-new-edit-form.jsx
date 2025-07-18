@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons/fi';
@@ -22,6 +22,13 @@ const productSchema = z.object({
   discount: z.coerce.number().min(0).max(100).optional(),
 });
 
+const categories = [
+  'Electronics',
+  'Fashion & Apparel',
+  'Home & Kitchen',
+  'Beauty & Personal Care',
+  'Health & Wellness',
+]
 
 const AddProductsNewEditForm = ({ productData }) => {
 
@@ -115,11 +122,28 @@ const AddProductsNewEditForm = ({ productData }) => {
               icon={<FiTag />}
               error={errors.productName}
             />
-            <RHFFormField
-              name="category"
+            <Controller
               control={control}
-              label="Category"
-              error={errors.category}
+              name="category"
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                  <select
+                    {...field}
+                    className="p-2 rounded-md border dark:border-neutral-700 dark:bg-neutral-800 bg-white text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.category && (
+                    <span className="text-sm text-red-500 mt-1">{errors.category.message}</span>
+                  )}
+                </div>
+              )}
             />
             <RHFFormField
               name="productKey"

@@ -1,29 +1,41 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
+import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons/fi';
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
 import RHFContentFiled from '@/app/components/controllers/RHFContentField';
+import { useProducts } from '@/hooks/useProducts';
+import { toast } from 'sonner';
 
-// Zod schema for form validation
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
   category: z.string().min(1, 'Category is required'),
   productKey: z.string().min(3, 'Product key must be at least 3 characters'),
-  price: z.number().min(0.01, 'Price must be greater than 0'),
-  productImage: z.any().refine((file) => file !== null, 'Image is required'),
+  price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
+  productImage: z.array(z.string().url()).min(1, "At least one image is required"),
   productDescription: z.string().min(10, 'Description must be at least 10 characters'),
   inStock: z.boolean().default(true),
-  discount: z.number().min(0).max(100).optional(),
+  discount: z.coerce.number().min(0).max(100).optional(),
 });
 
+const categories = [
+  'Electronics',
+  'Fashion & Apparel',
+  'Home & Kitchen',
+  'Beauty & Personal Care',
+  'Health & Wellness',
+]
 
-const AddProductsNewEditForm = () => {
-  const { control, handleSubmit, formState: { errors }, watch } = useForm({
+const AddProductsNewEditForm = ({ productData }) => {
+
+  const { createProduct, updateProduct } = useProducts();
+  const isEditMode = !!productData?._id;
+
+  const { control, handleSubmit, reset, formState: { errors }, watch } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
       productName: '',
@@ -31,19 +43,54 @@ const AddProductsNewEditForm = () => {
       productKey: '',
       price: 0,
       productDescription: '',
+      productImage: null,
       inStock: true,
       discount: 0,
     }
   });
+  useEffect(() => {
 
-  const onSubmit = () => {
-    console.log('Form Data:', data);
-    // Add your form submission logic here
+    if (productData) {
+      reset(productData);
+    }
+  }, [productData, reset]);
+  // Modify your onSubmit function
+  const onSubmit = async (data) => {
+    try {
+      if (isEditMode) {
+        await updateProduct(productData._id, data);
+        toast.success('Product updated successfully!');
+      } else {
+        await createProduct(data);
+        toast.success('Product created successfully!');
+
+        // Enhanced reset
+        reset({
+          productName: '',
+          category: '',
+          productKey: '',
+          price: 0,
+          productDescription: '',
+          inStock: true,
+          discount: 0,
+          productImage: null // Explicitly reset image field
+        });
+
+        if (typeof window !== 'undefined') {
+          const dropzone = document.querySelector('.dropzone');
+          if (dropzone) dropzone.innerHTML = '';
+        }
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message ||
+        `Failed to ${isEditMode ? 'update' : 'create'} product`);
+    }
   };
 
   const price = watch('price');
   const discount = watch('discount') || 0;
   const discountedPrice = price - (price * (discount / 100));
+
 
   return (
     <motion.div
@@ -68,38 +115,55 @@ const AddProductsNewEditForm = () => {
             <FiInfo className="text-blue-500" /> Basic Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RHFFormField 
-              name="productName" 
-              control={control} 
-              label="Product Name" 
+            <RHFFormField
+              name="productName"
+              control={control}
+              label="Product Name"
               icon={<FiTag />}
               error={errors.productName}
             />
-            <RHFFormField 
-              name="category" 
-              control={control} 
-              label="Category" 
-              error={errors.category}
+            <Controller
+              control={control}
+              name="category"
+              render={({ field }) => (
+                <div className="flex flex-col">
+                  <label className="mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                  <select
+                    {...field}
+                    className="p-2 rounded-md border dark:border-neutral-700 dark:bg-neutral-800 bg-white text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Select a category</option>
+                    {categories.map((category) => (
+                      <option key={category} value={category}>
+                        {category}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.category && (
+                    <span className="text-sm text-red-500 mt-1">{errors.category.message}</span>
+                  )}
+                </div>
+              )}
             />
-            <RHFFormField 
-              name="productKey" 
-              control={control} 
-              label="Product Key" 
+            <RHFFormField
+              name="productKey"
+              control={control}
+              label="Product Key"
               icon={<FiKey />}
               error={errors.productKey}
             />
-            <RHFFormField 
-              name="price" 
-              control={control} 
-              label="Price (₹)" 
+            <RHFFormField
+              name="price"
+              control={control}
+              label="Price (₹)"
               type="number"
               icon={<FiDollarSign />}
               error={errors.price}
             />
-            <RHFFormField 
-              name="discount" 
-              control={control} 
-              label="Discount (%)" 
+            <RHFFormField
+              name="discount"
+              control={control}
+              label="Discount (%)"
               type="number"
               min={0}
               max={100}
@@ -131,9 +195,10 @@ const AddProductsNewEditForm = () => {
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <FiImage className="text-blue-500" /> Product Image
           </h2>
-          <RHFDropzoneField 
-            name="productImage" 
-            control={control} 
+          <RHFDropzoneField
+            key={watch('productImage')}
+            name="productImage"
+            control={control}
             error={errors.productImage}
           />
         </section>

@@ -8,17 +8,19 @@ import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
 import RHFContentFiled from '@/app/components/controllers/RHFContentField';
+import { toast } from 'sonner';
+import axios from 'axios';
 
 // Zod schema for form validation
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
   category: z.string().min(1, 'Category is required'),
   productKey: z.string().min(3, 'Product key must be at least 3 characters'),
-  price: z.number().min(0.01, 'Price must be greater than 0'),
+  price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
   productImage: z.any().refine((file) => file !== null, 'Image is required'),
   productDescription: z.string().min(10, 'Description must be at least 10 characters'),
   inStock: z.boolean().default(true),
-  discount: z.number().min(0).max(100).optional(),
+  discount: z.coerce.number().min(0).max(100).optional(),
 });
 
 const categories = [
@@ -46,12 +48,12 @@ const AddProductsNewEditForm = () => {
  const handleImageUpload = async (files) => {
     if (files.length !== 4) return toast.error('Exactly 4 images required');
 
-    const validTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg' ,'image/webp' ];
     const tooLarge = [...files].some((file) => file.size > 5 * 1024 * 1024);
 
     if (tooLarge) return toast.error('Each image must be less than 5MB');
     if (![...files].every((file) => validTypes.includes(file.type)))
-      return toast.error('Only JPG, JPEG, PNG formats are allowed');
+      return toast.error('Only JPG, JPEG, PNG, and WebP formats are allowed');
 
     const imageUrls = [];
 
@@ -86,7 +88,7 @@ const AddProductsNewEditForm = () => {
         inStock: data.inStock,
       };
 
-      await axios.post('/api/products', productPayload);
+      await axios.post('/api/product', productPayload);
       toast.success('Product added successfully!');
     } catch (error) {
       console.error(error);

@@ -6,9 +6,9 @@ import { AppSidebar } from '@/components/app-sidebar'
 
 export function DashboardShell({ children }) {
   return (
-    <SidebarProvider>
+    <SidebarProvider className='scrollbar-hide'>
       <AppSidebar />
-      <SidebarInset>
+      <SidebarInset className='scrollbar-hide'>
         <DashboardHeader />
         <main className="flex flex-1 flex-col gap-4 p-4 pt-0">
           {children}

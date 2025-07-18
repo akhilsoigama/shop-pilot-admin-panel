@@ -63,43 +63,43 @@ const AddProductsNewEditForm = () => {
 
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
         {/* Basic Information Section */}
-        <section className="bg-gray-50 dark:bg-neutral-800 p-2 rounded-lg">
+        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <FiInfo className="text-blue-500" /> Basic Information
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RHFFormField 
-              name="productName" 
-              control={control} 
-              label="Product Name" 
+            <RHFFormField
+              name="productName"
+              control={control}
+              label="Product Name"
               icon={<FiTag />}
               error={errors.productName}
             />
-            <RHFFormField 
-              name="category" 
-              control={control} 
-              label="Category" 
+            <RHFFormField
+              name="category"
+              control={control}
+              label="Category"
               error={errors.category}
             />
-            <RHFFormField 
-              name="productKey" 
-              control={control} 
-              label="Product Key" 
+            <RHFFormField
+              name="productKey"
+              control={control}
+              label="Product Key"
               icon={<FiKey />}
               error={errors.productKey}
             />
-            <RHFFormField 
-              name="price" 
-              control={control} 
-              label="Price (₹)" 
+            <RHFFormField
+              name="price"
+              control={control}
+              label="Price (₹)"
               type="number"
               icon={<FiDollarSign />}
               error={errors.price}
             />
-            <RHFFormField 
-              name="discount" 
-              control={control} 
-              label="Discount (%)" 
+            <RHFFormField
+              name="discount"
+              control={control}
+              label="Discount (%)"
               type="number"
               min={0}
               max={100}
@@ -127,20 +127,18 @@ const AddProductsNewEditForm = () => {
           </div>
         </section>
 
-        {/* Product Image Section */}
-        <section className="bg-gray-50 dark:bg-neutral-800 p-2 rounded-lg">
+        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <FiImage className="text-blue-500" /> Product Image
           </h2>
-          <RHFDropzoneField 
-            name="productImage" 
-            control={control} 
+          <RHFDropzoneField
+            name="productImage"
+            control={control}
             error={errors.productImage}
           />
         </section>
 
-        {/* Description Section */}
-        <section className="bg-gray-50 dark:bg-neutral-800 p-2 rounded-lg">
+        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">📝 Product Description</h2>
           <RHFContentFiled
             name="productDescription"

@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -8,22 +8,27 @@ import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
 import RHFContentFiled from '@/app/components/controllers/RHFContentField';
+import { useProducts } from '@/hooks/useProducts';
+import { toast } from 'sonner';
 
-// Zod schema for form validation
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
   category: z.string().min(1, 'Category is required'),
   productKey: z.string().min(3, 'Product key must be at least 3 characters'),
   price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
-  productImage: z.any().refine((file) => file !== null, 'Image is required'),
+  productImage: z.array(z.string().url()).min(1, "At least one image is required"),
   productDescription: z.string().min(10, 'Description must be at least 10 characters'),
   inStock: z.boolean().default(true),
   discount: z.coerce.number().min(0).max(100).optional(),
 });
 
 
-const AddProductsNewEditForm = () => {
-  const { control, handleSubmit, formState: { errors }, watch } = useForm({
+const AddProductsNewEditForm = ({ productData }) => {
+
+  const { createProduct, updateProduct } = useProducts();
+  const isEditMode = !!productData?._id;
+
+  const { control, handleSubmit, reset, formState: { errors }, watch } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
       productName: '',
@@ -31,19 +36,54 @@ const AddProductsNewEditForm = () => {
       productKey: '',
       price: 0,
       productDescription: '',
+      productImage: null,
       inStock: true,
       discount: 0,
     }
   });
+  useEffect(() => {
 
-  const onSubmit = () => {
-    console.log('Form Data:', data);
-    // Add your form submission logic here
+    if (productData) {
+      reset(productData);
+    }
+  }, [productData, reset]);
+  // Modify your onSubmit function
+  const onSubmit = async (data) => {
+    try {
+      if (isEditMode) {
+        await updateProduct(productData._id, data);
+        toast.success('Product updated successfully!');
+      } else {
+        await createProduct(data);
+        toast.success('Product created successfully!');
+
+        // Enhanced reset
+        reset({
+          productName: '',
+          category: '',
+          productKey: '',
+          price: 0,
+          productDescription: '',
+          inStock: true,
+          discount: 0,
+          productImage: null // Explicitly reset image field
+        });
+
+        if (typeof window !== 'undefined') {
+          const dropzone = document.querySelector('.dropzone');
+          if (dropzone) dropzone.innerHTML = '';
+        }
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message ||
+        `Failed to ${isEditMode ? 'update' : 'create'} product`);
+    }
   };
 
   const price = watch('price');
   const discount = watch('discount') || 0;
   const discountedPrice = price - (price * (discount / 100));
+
 
   return (
     <motion.div
@@ -132,6 +172,7 @@ const AddProductsNewEditForm = () => {
             <FiImage className="text-blue-500" /> Product Image
           </h2>
           <RHFDropzoneField
+            key={watch('productImage')}
             name="productImage"
             control={control}
             error={errors.productImage}

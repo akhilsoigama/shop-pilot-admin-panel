@@ -28,6 +28,29 @@ const data = {
     email: "m@example.com",
     avatar: "",
   },
+
+  projects: [
+    {
+      name: "Overview",
+      url: "/dashboard/overview",
+      icon: SquareTerminal,
+    },
+    {
+      name: "Design Engineering",
+      url: "#",
+      icon: Frame,
+    },
+    {
+      name: "Sales & Marketing",
+      url: "#",
+      icon: PieChart,
+    },
+    {
+      name: "Travel",
+      url: "#",
+      icon: Map,
+    },
+  ],
   navMain: [
     {
       title: "Products",
@@ -66,28 +89,6 @@ const data = {
           url: "#",
         },
       ],
-    },
-  ],
-  projects: [
-    {
-      name: "Overview",
-      url: "/dashboard/overview",
-      icon: SquareTerminal,
-    },
-    {
-      name: "Design Engineering",
-      url: "#",
-      icon: Frame,
-    },
-    {
-      name: "Sales & Marketing",
-      url: "#",
-      icon: PieChart,
-    },
-    {
-      name: "Travel",
-      url: "#",
-      icon: Map,
     },
   ],
 }

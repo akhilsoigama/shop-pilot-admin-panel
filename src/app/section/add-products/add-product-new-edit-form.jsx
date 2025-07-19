@@ -48,7 +48,7 @@ const AddProductsNewEditForm = ({ productData }) => {
   const { createProduct, updateProduct } = useProducts();
   const isEditMode = !!productData?._id;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const route = useRouter()
+  const router = useRouter();
 
   const {
     control,
@@ -94,7 +94,7 @@ const AddProductsNewEditForm = ({ productData }) => {
       if (isEditMode) {
         await updateProduct(productData._id, data);
         toast.success('Product updated successfully!');
-        route.push('/dashboard/product')
+        router.push('/dashboard/product');
       } else {
         await createProduct(data);
         toast.success('Product created successfully!');
@@ -136,6 +136,10 @@ const AddProductsNewEditForm = ({ productData }) => {
 
     setValue('discountPrice', parseFloat(calculatedPrice.toFixed(2)));
   }, [price, discount, setValue]);
+
+  const handleCancel = () => {
+    router.push('/dashboard/product');
+  };
 
   return (
     <motion.div
@@ -246,14 +250,17 @@ const AddProductsNewEditForm = ({ productData }) => {
         </section>
 
         <div className="flex justify-end gap-4">
-          <motion.button
-            type="button"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-6 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 rounded-md font-medium shadow-sm"
-          >
-            Cancel
-          </motion.button>
+          {isEditMode && (
+            <motion.button
+              type="button"
+              onClick={handleCancel}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="px-6 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 rounded-md font-medium shadow-sm"
+            >
+              Cancel
+            </motion.button>
+          )}
           <motion.button
             type="submit"
             disabled={isSubmitting}
@@ -272,7 +279,6 @@ const AddProductsNewEditForm = ({ productData }) => {
               </>
             )}
           </motion.button>
-
         </div>
       </form>
     </motion.div>

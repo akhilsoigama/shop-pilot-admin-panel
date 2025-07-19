@@ -15,7 +15,7 @@ export default function ProductList() {
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="p-6"
+      className="p-3"
     >
       <h2 className="text-2xl font-bold mb-6">All Products</h2>
 
@@ -31,6 +31,8 @@ export default function ProductList() {
                 <th className="p-4">Product</th>
                 <th className="p-4">Category</th>
                 <th className="p-4">Price</th>
+                <th className="p-4">Discount</th>
+                <th className="p-4">Discount-Price</th>
                 <th className="p-4">Action</th>
               </tr>
             </thead>
@@ -55,6 +57,12 @@ export default function ProductList() {
                   <td className="p-4 text-gray-600 dark:text-gray-300">{product.category}</td>
                   <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
                     ₹{product.price}
+                  </td>
+                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
+                    ₹{product.discount}
+                  </td>
+                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
+                    ₹{product.discountPrice}
                   </td>
                   <td className="p-4">
                     <Button

@@ -1,9 +1,11 @@
 'use client';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
+import UpdateIcon from '@mui/icons-material/Update';
+import ReplayIcon from '@mui/icons-material/Replay';
 import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons/fi';
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
@@ -11,6 +13,7 @@ import RHFContentFiled from '@/app/components/controllers/RHFContentField';
 import { useProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 import { RHFDropdown } from '@/app/components/controllers/RHFDropdown';
+import { useRouter } from 'next/navigation';
 import RHFCheckboxField from '@/app/components/controllers/RHFCheckboxField';
 
 const productSchema = z.object({
@@ -21,6 +24,7 @@ const productSchema = z.object({
   productImage: z.array(z.string().url()).min(1, "At least one image is required"),
   productDescription: z.string().min(10, 'Description must be at least 10 characters'),
   inStock: z.boolean().default(true),
+  discountPrice: z.coerce.number().default(0),
   discount: z.coerce.number().min(0).max(100).optional(),
   quantity: z.number().default(1),
 });
@@ -43,6 +47,8 @@ const slugify = (str) =>
 const AddProductsNewEditForm = ({ productData }) => {
   const { createProduct, updateProduct } = useProducts();
   const isEditMode = !!productData?._id;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const route = useRouter()
 
   const {
     control,
@@ -62,6 +68,7 @@ const AddProductsNewEditForm = ({ productData }) => {
       productImage: null,
       inStock: true,
       discount: 0,
+      discountPrice: 0,
       quantity: 1,
     },
   });
@@ -82,10 +89,12 @@ const AddProductsNewEditForm = ({ productData }) => {
   }, [productData, reset]);
 
   const onSubmit = async (data) => {
+    setIsSubmitting(true);
     try {
       if (isEditMode) {
         await updateProduct(productData._id, data);
         toast.success('Product updated successfully!');
+        route.push('/dashboard/product')
       } else {
         await createProduct(data);
         toast.success('Product created successfully!');
@@ -98,6 +107,7 @@ const AddProductsNewEditForm = ({ productData }) => {
           productDescription: '',
           inStock: true,
           discount: 0,
+          discountPrice: 0,
           quantity: 0,
           productImage: null,
         });
@@ -113,11 +123,19 @@ const AddProductsNewEditForm = ({ productData }) => {
         `Failed to ${isEditMode ? 'update' : 'create'} product`
       );
     }
+    finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const price = watch('price');
-  const discount = watch('discount') || 0;
-  const discountedPrice = price - (price * (discount / 100));
+  const price = watch('price')
+  const discount = watch('discount')
+  useEffect(() => {
+    const discountValue = price * (discount / 100);
+    const calculatedPrice = price - discountValue;
+
+    setValue('discountPrice', parseFloat(calculatedPrice.toFixed(2)));
+  }, [price, discount, setValue]);
 
   return (
     <motion.div
@@ -128,7 +146,7 @@ const AddProductsNewEditForm = ({ productData }) => {
     >
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center justify-center gap-2">
-          <FiPlus className="text-blue-500" /> Add New Product
+          {isEditMode ? <UpdateIcon className="text-blue-500" /> : <FiPlus className="text-blue-500" />}    {isEditMode ? 'Update Product' : 'Add New Product'}
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
           Fill in the details below to list a new product in your inventory.
@@ -188,14 +206,14 @@ const AddProductsNewEditForm = ({ productData }) => {
               isDisabled={true}
               error={errors.quantity}
             />
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Discounted Price
-              </label>
-              <div className="p-2 bg-gray-100 dark:bg-neutral-700 rounded-md">
-                ₹{discountedPrice.toFixed(2)}
-              </div>
-            </div>
+            <RHFFormField
+              name="discountPrice"
+              control={control}
+              label="Discounted Price (₹)"
+              type="number"
+              isDisabled={true}
+              error={errors.discountPrice}
+            />
             <RHFCheckboxField
               name="inStock"
               control={control}
@@ -221,7 +239,6 @@ const AddProductsNewEditForm = ({ productData }) => {
             📝 Product Description
           </h2>
           <RHFContentFiled
-            key={watch('productDescription')}
             name="productDescription"
             control={control}
             error={errors.productDescription}
@@ -239,12 +256,23 @@ const AddProductsNewEditForm = ({ productData }) => {
           </motion.button>
           <motion.button
             type="submit"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600 rounded-md font-medium shadow-sm flex items-center gap-2"
+            disabled={isSubmitting}
+            whileHover={!isSubmitting ? { scale: 1.05 } : {}}
+            whileTap={!isSubmitting ? { scale: 0.95 } : {}}
+            className={`px-6 py-2 rounded-md font-medium shadow-sm flex items-center gap-2 
+              ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} 
+              text-white dark:bg-blue-500 dark:hover:bg-blue-600`}
           >
-            <FiPlus /> Add Product
+            {isSubmitting ? (
+              <ReplayIcon size={20} className='text-white animate-spin' />
+            ) : (
+              <>
+                {isEditMode ? <UpdateIcon /> : <FiPlus />}
+                {isEditMode ? 'Update Product' : 'Add Product'}
+              </>
+            )}
           </motion.button>
+
         </div>
       </form>
     </motion.div>

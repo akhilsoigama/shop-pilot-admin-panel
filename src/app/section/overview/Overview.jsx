@@ -62,7 +62,7 @@ const topProducts = [
 export default function Overview() {
   return (
     <div className="p-6 space-y-6 bg-background text-foreground">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center flex-wrap gap-4 justify-between">
         <h1 className="text-3xl font-bold">Dashboard Overview</h1>
         <div className="flex items-center space-x-4">
           <DropdownMenu>

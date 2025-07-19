@@ -1,7 +1,7 @@
 'use client';
 import React, { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import UpdateIcon from '@mui/icons-material/Update';
@@ -14,6 +14,7 @@ import { useProducts } from '@/hooks/useProducts';
 import { toast } from 'sonner';
 import { RHFDropdown } from '@/app/components/controllers/RHFDropdown';
 import { useRouter } from 'next/navigation';
+import RHFCheckboxField from '@/app/components/controllers/RHFCheckboxField';
 
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
@@ -23,7 +24,9 @@ const productSchema = z.object({
   productImage: z.array(z.string().url()).min(1, "At least one image is required"),
   productDescription: z.string().min(10, 'Description must be at least 10 characters'),
   inStock: z.boolean().default(true),
+  discountPrice: z.coerce.number().default(0),
   discount: z.coerce.number().min(0).max(100).optional(),
+  quantity: z.number().default(1),
 });
 
 const categories = [
@@ -32,16 +35,29 @@ const categories = [
   'Home & Kitchen',
   'Beauty & Personal Care',
   'Health & Wellness',
-]
+];
+
+const slugify = (str) =>
+  str
+    .toLowerCase()
+    .replace(/[^\w\s]/gi, '')
+    .trim()
+    .replace(/\s+/g, '-');
 
 const AddProductsNewEditForm = ({ productData }) => {
-
   const { createProduct, updateProduct } = useProducts();
   const isEditMode = !!productData?._id;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const route = useRouter()
 
-  const { control, handleSubmit, reset, formState: { errors }, watch } = useForm({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setValue,
+    formState: { errors },
+    watch,
+  } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
       productName: '',
@@ -52,15 +68,26 @@ const AddProductsNewEditForm = ({ productData }) => {
       productImage: null,
       inStock: true,
       discount: 0,
-    }
+      discountPrice: 0,
+      quantity: 1,
+    },
   });
-  useEffect(() => {
 
+  const productName = watch('productName');
+
+  useEffect(() => {
+    if (!isEditMode && productName?.length > 2) {
+      const generatedKey = `PRD-${slugify(productName)}-${Date.now()}`;
+      setValue('productKey', generatedKey);
+    }
+  }, [productName, isEditMode, setValue]);
+
+  useEffect(() => {
     if (productData) {
       reset(productData);
     }
   }, [productData, reset]);
-  // Modify your onSubmit function
+
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
@@ -72,7 +99,6 @@ const AddProductsNewEditForm = ({ productData }) => {
         await createProduct(data);
         toast.success('Product created successfully!');
 
-        // Enhanced reset
         reset({
           productName: '',
           category: '',
@@ -81,7 +107,9 @@ const AddProductsNewEditForm = ({ productData }) => {
           productDescription: '',
           inStock: true,
           discount: 0,
-          productImage: null
+          discountPrice: 0,
+          quantity: 0,
+          productImage: null,
         });
 
         if (typeof window !== 'undefined') {
@@ -90,18 +118,24 @@ const AddProductsNewEditForm = ({ productData }) => {
         }
       }
     } catch (error) {
-      toast.error(error.response?.data?.message ||
-        `Failed to ${isEditMode ? 'update' : 'create'} product`);
+      toast.error(
+        error.response?.data?.message ||
+        `Failed to ${isEditMode ? 'update' : 'create'} product`
+      );
     }
     finally {
       setIsSubmitting(false);
     }
   };
 
-  const price = watch('price');
-  const discount = watch('discount') || 0;
-  const discountedPrice = price - (price * (discount / 100));
+  const price = watch('price')
+  const discount = watch('discount')
+  useEffect(() => {
+    const discountValue = price * (discount / 100);
+    const calculatedPrice = price - discountValue;
 
+    setValue('discountPrice', parseFloat(calculatedPrice.toFixed(2)));
+  }, [price, discount, setValue]);
 
   return (
     <motion.div
@@ -134,7 +168,7 @@ const AddProductsNewEditForm = ({ productData }) => {
             />
             <RHFDropdown
               name="category"
-              label='Category'
+              label="Category"
               control={control}
               errors={errors}
               categories={categories}
@@ -145,6 +179,7 @@ const AddProductsNewEditForm = ({ productData }) => {
               label="Product Key"
               icon={<FiKey />}
               error={errors.productKey}
+              isDisabled={true}
             />
             <RHFFormField
               name="price"
@@ -163,25 +198,27 @@ const AddProductsNewEditForm = ({ productData }) => {
               max={100}
               error={errors.discount}
             />
-            <div className="flex flex-col">
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Discounted Price
-              </label>
-              <div className="p-2 bg-gray-100 dark:bg-neutral-700 rounded-md">
-                ₹{discountedPrice.toFixed(2)}
-              </div>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="inStock"
-                {...control.register('inStock')}
-                className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-              />
-              <label htmlFor="inStock" className="ml-2 block text-sm text-gray-700 dark:text-gray-300">
-                In Stock
-              </label>
-            </div>
+            <RHFFormField
+              name="quantity"
+              control={control}
+              label="Quantity"
+              type="number"
+              isDisabled={true}
+              error={errors.quantity}
+            />
+            <RHFFormField
+              name="discountPrice"
+              control={control}
+              label="Discounted Price (₹)"
+              type="number"
+              isDisabled={true}
+              error={errors.discountPrice}
+            />
+            <RHFCheckboxField
+              name="inStock"
+              control={control}
+              label="In Stock"
+            />
           </div>
         </section>
 
@@ -198,9 +235,10 @@ const AddProductsNewEditForm = ({ productData }) => {
         </section>
 
         <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">📝 Product Description</h2>
+          <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">
+            📝 Product Description
+          </h2>
           <RHFContentFiled
-            key={watch('productDescription')}
             name="productDescription"
             control={control}
             error={errors.productDescription}

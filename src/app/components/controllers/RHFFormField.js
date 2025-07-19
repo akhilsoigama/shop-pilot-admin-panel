@@ -17,7 +17,8 @@ const RHFFormField = ({
   multiline = false,
   rows = 3,
   className,
-  type = 'text', // Added type prop with default value 'text'
+  isDisabled = false,
+  type = 'text', 
   ...rest
 }) => {
   return (
@@ -53,7 +54,8 @@ const RHFFormField = ({
               <Input
                 {...field}
                 id={name}
-                type={type} // Added type prop to Input
+                type={type} 
+                disabled={isDisabled}
                 className={cn(
                   'w-full',
                   startIcon && 'pl-10',

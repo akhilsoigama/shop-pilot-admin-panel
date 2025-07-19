@@ -60,7 +60,7 @@ export default function ProductList() {
                     <Button
                       variant="default"
                       className="bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-                      onClick={() => router.push(`/products/${product._id}`)}
+                      onClick={() => router.push(`/dashboard/addProducts/${product._id}`)}
                     >
                       Visit
                     </Button>

@@ -1,6 +1,11 @@
 import Product from "@/app/model/Product";
-import { connectDB } from "@/lib/db"
+import { connectDB } from "@/lib/db";
 import { NextResponse } from "next/server";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+    apiVersion: "2023-08-16",
+});
 
 export async function GET(req) {
     try {
@@ -14,13 +19,11 @@ export async function GET(req) {
     }
 }
 
-
 export async function POST(req) {
     try {
         await connectDB();
-        const { productName, category, productKey, price, discount, discountPrice, inStock, productImage, productDescription } = await req.json();
 
-        const product = new Product({
+        const {
             productName,
             category,
             productKey,
@@ -29,7 +32,45 @@ export async function POST(req) {
             discountPrice,
             inStock,
             productImage,
-            productDescription
+            productDescription,
+            quantity
+        } = await req.json();
+        const slugify = (str) =>
+            str
+                .toLowerCase()
+                .replace(/[^\w\s]/gi, '')
+                .trim()
+                .replace(/\s+/g, '-');
+        const generatedProductKey = productKey || `${slugify()}`;
+
+        const stripeProduct = await stripe.products.create({
+            name: productName,
+            images: productImage?.length > 0 ? [productImage[0]] : [],
+            metadata: {
+                category,
+                productKey: generatedProductKey,
+            },
+        });
+
+        const stripePrice = await stripe.prices.create({
+            unit_amount: Math.round(discountPrice || price) * 100,
+            currency: 'inr',
+            product: stripeProduct.id,
+        });
+
+        const product = new Product({
+            productName,
+            category,
+            productKey: generatedProductKey,
+            price,
+            discount,
+            discountPrice,
+            inStock,
+            productImage,
+            quantity,
+            productDescription,
+            stripeProductId: stripeProduct.id,
+            stripePriceId: stripePrice.id,
         });
 
         await product.save();

@@ -31,6 +31,7 @@ export default function ProductList() {
                 <th className="p-4">Product</th>
                 <th className="p-4">Category</th>
                 <th className="p-4">Price</th>
+                <th className="p-4">Discount-Price</th>
                 <th className="p-4">Action</th>
               </tr>
             </thead>
@@ -56,11 +57,14 @@ export default function ProductList() {
                   <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
                     ₹{product.price}
                   </td>
+                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
+                    ₹{product.discount}
+                  </td>
                   <td className="p-4">
                     <Button
                       variant="default"
                       className="bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200"
-                      onClick={() => router.push(`/products/${product._id}`)}
+                      onClick={() => router.push(`/dashboard/addProducts/${product._id}`)}
                     >
                       Visit
                     </Button>

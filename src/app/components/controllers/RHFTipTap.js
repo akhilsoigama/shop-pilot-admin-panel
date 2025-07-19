@@ -1,7 +1,8 @@
 'use client';
 import StarterKit from '@tiptap/starter-kit';
-import { EditorProvider } from '@tiptap/react';
+import { EditorProvider, useCurrentEditor } from '@tiptap/react';
 import { RHFTipTapMenuBar } from '../common/RHFTipTapMenuBar';
+import { useEffect } from 'react';
 
 const RFFTiptapEditor = ({ onChange, value, height = '300px' }) => {
   return (
@@ -11,7 +12,7 @@ const RFFTiptapEditor = ({ onChange, value, height = '300px' }) => {
         content={value || ''}
         onUpdate={({ editor }) => {
           if (typeof onChange === 'function') {
-            onChange(editor.getHTML()); 
+            onChange(editor.getHTML());
           }
         }}
         editorProps={{
@@ -22,9 +23,23 @@ const RFFTiptapEditor = ({ onChange, value, height = '300px' }) => {
         }}
         slotBefore={<RHFTipTapMenuBar />}
         immediatelyRender={false}
-      />
+      >
+        <EditorContentUpdater content={value} />
+      </EditorProvider>
     </div>
   );
+};
+
+const EditorContentUpdater = ({ content }) => {
+  const { editor } = useCurrentEditor();
+
+  useEffect(() => {
+    if (editor && content !== editor.getHTML()) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor]);
+
+  return null;
 };
 
 export default RFFTiptapEditor;

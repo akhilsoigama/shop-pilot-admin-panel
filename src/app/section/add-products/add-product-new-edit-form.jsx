@@ -5,7 +5,7 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import UpdateIcon from '@mui/icons-material/Update';
-import ReplayIcon from '@mui/icons-material/Replay';
+import { IoReloadOutline } from "react-icons/io5";
 import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons/fi';
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
@@ -98,7 +98,7 @@ const AddProductsNewEditForm = ({ productData }) => {
         const found = Subcategories.find(item => item.name === productData.category);
         const subs = found ? found.subcategories : [];
         setFilteredSubcategories(subs);
-        
+
         if (productData.subCategory && subs.includes(productData.subCategory)) {
           setValue('subCategory', productData.subCategory);
         }
@@ -311,7 +311,7 @@ const AddProductsNewEditForm = ({ productData }) => {
               text-white dark:bg-blue-500 dark:hover:bg-blue-600`}
           >
             {isSubmitting ? (
-              <ReplayIcon size={20} className='text-white animate-spin' />
+              <IoReloadOutline  size={20} className='text-white  animate-spin' />
             ) : (
               <>
                 {isEditMode ? <UpdateIcon /> : <FiPlus />}

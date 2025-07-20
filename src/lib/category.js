@@ -29,6 +29,7 @@ export const Subcategories = [
             'Mobile Phones',
             'Laptops',
             'Tablets',
+            'Refrigerator',
             'Headphones',
             'Cameras',
             'Smart Watches',

@@ -4,19 +4,18 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-    apiVersion: "2023-08-16",
+  apiVersion: "2023-08-16",
 });
 
 export async function GET(req) {
-    try {
-        await connectDB();
-
-        const product = await Product.find();
-        return NextResponse.json(product, { status: 200 });
-    } catch (error) {
-        console.log("Error in get all products", error);
-        return NextResponse.json({ message: "Failed to get all product" }, { status: 500 });
-    }
+  try {
+    await connectDB();
+    const product = await Product.find();
+    return NextResponse.json(product, { status: 200 });
+  } catch (error) {
+    console.log("Error in get all products", error);
+    return NextResponse.json({ message: "Failed to get all products" }, { status: 500 });
+  }
 }
 
 export async function POST(req) {
@@ -25,7 +24,9 @@ export async function POST(req) {
 
     const {
       productName,
+      brand,
       category,
+      subCategory,
       productKey,
       price,
       discount,
@@ -54,6 +55,7 @@ export async function POST(req) {
       images: productImage?.length > 0 ? [productImage[0]] : [],
       metadata: {
         category,
+        subCategory: subCategory || '',
         productKey: generatedProductKey,
       },
     });
@@ -66,11 +68,13 @@ export async function POST(req) {
 
     const product = new Product({
       productName,
+      brand,
       category,
+      subCategory,
       productKey: generatedProductKey,
       price: actualPrice,
       discount: discountPercent,
-      discountPrice: discountPrice,
+      discountPrice,
       inStock,
       productImage,
       quantity,
@@ -80,6 +84,7 @@ export async function POST(req) {
     });
 
     await product.save();
+
     return NextResponse.json(product, { status: 201 });
   } catch (error) {
     console.error("Error in add product", error);
@@ -89,4 +94,3 @@ export async function POST(req) {
     );
   }
 }
-

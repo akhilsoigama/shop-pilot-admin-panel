@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useProducts } from '@/hooks/useProducts'
 import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
+import SearchIcon from '@mui/icons-material/Search';
 import {
   DropdownMenu,
   DropdownMenuContent,

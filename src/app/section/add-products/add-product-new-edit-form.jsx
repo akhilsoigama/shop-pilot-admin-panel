@@ -1,11 +1,11 @@
 'use client';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { motion } from 'framer-motion';
 import UpdateIcon from '@mui/icons-material/Update';
-import ReplayIcon from '@mui/icons-material/Replay';
+import { IoReloadOutline } from "react-icons/io5";
 import { FiPlus, FiImage, FiInfo, FiDollarSign, FiTag, FiKey } from 'react-icons/fi';
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import RHFDropzoneField from '@/app/components/controllers/RHFImageDropZone';
@@ -15,10 +15,13 @@ import { toast } from 'sonner';
 import { RHFDropdown } from '@/app/components/controllers/RHFDropdown';
 import { useRouter } from 'next/navigation';
 import RHFCheckboxField from '@/app/components/controllers/RHFCheckboxField';
+import { categories, Subcategories } from '@/lib/category';
 
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
+  brand: z.string().min(2, 'Name must be at least 2 characters'),
   category: z.string().min(1, 'Category is required'),
+  subCategory: z.string().min(1, 'Category is required'),
   productKey: z.string().min(3, 'Product key must be at least 3 characters'),
   price: z.coerce.number().min(0.01, 'Price must be greater than 0'),
   productImage: z.array(z.string().url()).min(1, "At least one image is required"),
@@ -28,14 +31,6 @@ const productSchema = z.object({
   discount: z.coerce.number().min(0).max(100).optional(),
   quantity: z.number().default(1),
 });
-
-const categories = [
-  'Electronics',
-  'Fashion & Apparel',
-  'Home & Kitchen',
-  'Beauty & Personal Care',
-  'Health & Wellness',
-];
 
 const slugify = (str) =>
   str
@@ -49,6 +44,8 @@ const AddProductsNewEditForm = ({ productData }) => {
   const isEditMode = !!productData?._id;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
+  const [filteredSubcategories, setFilteredSubcategories] = useState([]);
+  const initializingRef = useRef(true); // Track initialization state
 
   const {
     control,
@@ -61,7 +58,9 @@ const AddProductsNewEditForm = ({ productData }) => {
     resolver: zodResolver(productSchema),
     defaultValues: {
       productName: '',
+      brand: '',
       category: '',
+      subCategory: '',
       productKey: '',
       price: 0,
       productDescription: '',
@@ -74,6 +73,9 @@ const AddProductsNewEditForm = ({ productData }) => {
   });
 
   const productName = watch('productName');
+  const price = watch('price');
+  const discount = watch('discount');
+  const selectedCategory = watch('category');
 
   useEffect(() => {
     if (!isEditMode && productName?.length > 2) {
@@ -83,10 +85,42 @@ const AddProductsNewEditForm = ({ productData }) => {
   }, [productName, isEditMode, setValue]);
 
   useEffect(() => {
+    const discountValue = price * (discount / 100);
+    const calculatedPrice = price - discountValue;
+    setValue('discountPrice', parseFloat(calculatedPrice.toFixed(2)));
+  }, [price, discount, setValue]);
+
+  // Handle initial data setup for edit mode
+  useEffect(() => {
     if (productData) {
       reset(productData);
+      if (productData.category) {
+        const found = Subcategories.find(item => item.name === productData.category);
+        const subs = found ? found.subcategories : [];
+        setFilteredSubcategories(subs);
+
+        if (productData.subCategory && subs.includes(productData.subCategory)) {
+          setValue('subCategory', productData.subCategory);
+        }
+      }
     }
-  }, [productData, reset]);
+
+    // Mark initialization complete after all effects
+    const timer = setTimeout(() => {
+      initializingRef.current = false;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [productData, reset, setValue]);
+
+  // Handle category changes (only after initialization)
+  useEffect(() => {
+    if (selectedCategory && !initializingRef.current) {
+      const found = Subcategories.find(item => item.name === selectedCategory);
+      setFilteredSubcategories(found ? found.subcategories : []);
+      setValue('subCategory', ''); // Only reset when not initializing
+    }
+  }, [selectedCategory, setValue]);
 
   const onSubmit = async (data) => {
     setIsSubmitting(true);
@@ -101,7 +135,9 @@ const AddProductsNewEditForm = ({ productData }) => {
 
         reset({
           productName: '',
+          brand: '',
           category: '',
+          subCategory: '',
           productKey: '',
           price: 0,
           productDescription: '',
@@ -127,15 +163,6 @@ const AddProductsNewEditForm = ({ productData }) => {
       setIsSubmitting(false);
     }
   };
-
-  const price = watch('price')
-  const discount = watch('discount')
-  useEffect(() => {
-    const discountValue = price * (discount / 100);
-    const calculatedPrice = price - discountValue;
-
-    setValue('discountPrice', parseFloat(calculatedPrice.toFixed(2)));
-  }, [price, discount, setValue]);
 
   const handleCancel = () => {
     router.push('/dashboard/product');
@@ -170,12 +197,25 @@ const AddProductsNewEditForm = ({ productData }) => {
               icon={<FiTag />}
               error={errors.productName}
             />
+            <RHFFormField
+              name="brand"
+              control={control}
+              label="Brand"
+              error={errors.productName}
+            />
             <RHFDropdown
               name="category"
               label="Category"
               control={control}
               errors={errors}
               categories={categories}
+            />
+            <RHFDropdown
+              name="subCategory"
+              label="SubCategory"
+              control={control}
+              errors={errors}
+              categories={filteredSubcategories}
             />
             <RHFFormField
               name="productKey"
@@ -226,7 +266,7 @@ const AddProductsNewEditForm = ({ productData }) => {
           </div>
         </section>
 
-        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
+        <section className="bg-gray-50  dark:bg-neutral-800 p-4 pb-6 rounded-lg">
           <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
             <FiImage className="text-blue-500" /> Product Image
           </h2>
@@ -271,7 +311,7 @@ const AddProductsNewEditForm = ({ productData }) => {
               text-white dark:bg-blue-500 dark:hover:bg-blue-600`}
           >
             {isSubmitting ? (
-              <ReplayIcon size={20} className='text-white animate-spin' />
+              <IoReloadOutline  size={20} className='text-white  animate-spin' />
             ) : (
               <>
                 {isEditMode ? <UpdateIcon /> : <FiPlus />}

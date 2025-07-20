@@ -20,64 +20,73 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
-    try {
-        await connectDB();
+  try {
+    await connectDB();
 
-        const {
-            productName,
-            category,
-            productKey,
-            price,
-            discount,
-            discountPrice,
-            inStock,
-            productImage,
-            productDescription,
-            quantity
-        } = await req.json();
-        const slugify = (str) =>
-            str
-                .toLowerCase()
-                .replace(/[^\w\s]/gi, '')
-                .trim()
-                .replace(/\s+/g, '-');
-        const generatedProductKey = productKey || `${slugify()}`;
+    const {
+      productName,
+      category,
+      productKey,
+      price,
+      discount,
+      inStock,
+      productImage,
+      productDescription,
+      quantity,
+    } = await req.json();
 
-        const stripeProduct = await stripe.products.create({
-            name: productName,
-            images: productImage?.length > 0 ? [productImage[0]] : [],
-            metadata: {
-                category,
-                productKey: generatedProductKey,
-            },
-        });
+    const slugify = (str) =>
+      str
+        .toLowerCase()
+        .replace(/[^\w\s]/gi, '')
+        .trim()
+        .replace(/\s+/g, '-');
 
-        const stripePrice = await stripe.prices.create({
-            unit_amount: Math.round(discountPrice || price) * 100,
-            currency: 'inr',
-            product: stripeProduct.id,
-        });
+    const generatedProductKey = productKey || `${slugify(productName)}-${Date.now()}`;
 
-        const product = new Product({
-            productName,
-            category,
-            productKey: generatedProductKey,
-            price,
-            discount,
-            discountPrice,
-            inStock,
-            productImage,
-            quantity,
-            productDescription,
-            stripeProductId: stripeProduct.id,
-            stripePriceId: stripePrice.id,
-        });
+    const actualPrice = Number(price);
+    const discountPercent = Number(discount) || 0;
+    const discountPrice =
+      discountPercent > 0 ? actualPrice - (actualPrice * discountPercent) / 100 : actualPrice;
 
-        await product.save();
-        return NextResponse.json(product, { status: 201 });
+    const stripeProduct = await stripe.products.create({
+      name: productName,
+      images: productImage?.length > 0 ? [productImage[0]] : [],
+      metadata: {
+        category,
+        productKey: generatedProductKey,
+      },
+    });
 
-    } catch (error) {
-        console.log("Error in add product", error);
-        return NextResponse.json({ message: "Failed to add product", error: error.message }, { status: 400 });
-    }
+    const stripePrice = await stripe.prices.create({
+      unit_amount: Math.round(discountPrice * 100),
+      currency: 'inr',
+      product: stripeProduct.id,
+    });
+
+    const product = new Product({
+      productName,
+      category,
+      productKey: generatedProductKey,
+      price: actualPrice,
+      discount: discountPercent,
+      discountPrice: discountPrice,
+      inStock,
+      productImage,
+      quantity,
+      productDescription,
+      stripeProductId: stripeProduct.id,
+      stripePriceId: stripePrice.id,
+    });
+
+    await product.save();
+    return NextResponse.json(product, { status: 201 });
+  } catch (error) {
+    console.error("Error in add product", error);
+    return NextResponse.json(
+      { message: "Failed to add product", error: error.message },
+      { status: 400 }
+    );
+  }
 }
+

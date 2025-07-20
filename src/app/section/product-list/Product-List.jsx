@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useProducts } from '@/hooks/useProducts'
 import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
+import SearchIcon from '@mui/icons-material/Search';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,14 +29,14 @@ export default function ProductList() {
   const router = useRouter()
   const { products, deleteProduct } = useProducts()
   const data = products || []
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState('')
 
   const filteredProducts = useMemo(() => {
-    if (!searchTerm.trim()) return data;
+    if (!searchTerm.trim()) return data
     return data.filter((product) =>
       product.productName.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  }, [searchTerm, data]);
+    )
+  }, [searchTerm, data])
 
   const handleDelete = async (productId) => {
     try {
@@ -51,24 +52,27 @@ export default function ProductList() {
       initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="p-3"
+      className="flex-1 max-w-5xl h-full flex flex-col overflow-hidden p-4"
     >
-      <div className='flex justify-between items-center'>
-        <h2 className="text-2xl text-center font-bold mb-6">All Products</h2>
+      {/* Header with Search */}
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold">All Products</h2>
         <Input
           type="text"
           placeholder="Search by product name..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-4 w-[300px] px-4 py-2 border border-gray-300 rounded-md  dark:bg-neutral-800 dark:text-white"
+          className="max-w-[300px] px-4 py-2 border border-gray-300 rounded-md dark:bg-neutral-800 dark:text-white"
         />
       </div>
-      {data.length === 0 ? (
+
+      {/* Product Table */}
+      {filteredProducts.length === 0 ? (
         <div className="text-center py-20 text-gray-500 dark:text-gray-400 text-lg">
           No products found.
         </div>
       ) : (
-        <div className="overflow-x-auto border rounded-lg shadow-sm">
+        <div className="flex-1 overflow-auto scrollbar-hide border rounded-lg shadow-sm">
           <table className="min-w-full text-sm">
             <thead className="bg-muted dark:bg-muted/30 text-left text-gray-700 dark:text-gray-200">
               <tr>
@@ -83,7 +87,7 @@ export default function ProductList() {
             </thead>
             <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
               {filteredProducts.map((product) => (
-                < tr
+                <tr
                   key={product._id}
                   className="transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/50"
                 >
@@ -111,9 +115,13 @@ export default function ProductList() {
                   </td>
                   <td>
                     {product.inStock ? (
-                      <div className="text-green-600 p-2 text-center font-bold rounded-md bg-green-300/30 dark:text-green-400">Available</div>
+                      <div className="text-green-600 p-2 text-center font-bold rounded-md bg-green-300/30 dark:text-green-400">
+                        Available
+                      </div>
                     ) : (
-                      <div className="text-red-600 p-2 text-center font-bold bg-red-300/30 rounded-md dark:text-red-400">UnAvailable</div>
+                      <div className="text-red-600 p-2 text-center font-bold bg-red-300/30 rounded-md dark:text-red-400">
+                        UnAvailable
+                      </div>
                     )}
                   </td>
                   <td className="p-4">
@@ -124,7 +132,7 @@ export default function ProductList() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           onClick={() => router.push(`/dashboard/addProducts/${product._id}`)}
                           className="cursor-pointer"
                         >
@@ -137,7 +145,7 @@ export default function ProductList() {
                         </DropdownMenuItem>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <DropdownMenuItem 
+                            <DropdownMenuItem
                               onSelect={(e) => e.preventDefault()}
                               className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
                             >
@@ -154,7 +162,7 @@ export default function ProductList() {
                             </DialogHeader>
                             <DialogFooter>
                               <Button variant="outline">Cancel</Button>
-                              <Button 
+                              <Button
                                 variant="destructive"
                                 onClick={() => handleDelete(product._id)}
                               >
@@ -171,8 +179,7 @@ export default function ProductList() {
             </tbody>
           </table>
         </div>
-      )
-      }
-    </motion.div >
+      )}
+    </motion.div>
   )
 }

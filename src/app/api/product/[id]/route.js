@@ -31,7 +31,7 @@ export async function PUT(req, { params }) {
     try {
         await connectDB();
         const { id } = await params;
-        const { productName, category, productKey, price, discount, discountPrice, inStock, productImage, productDescription } = await req.json();
+        const { productName, brand, category, subCategory, productKey, price, discount, discountPrice, inStock, productImage, productDescription } = await req.json();
 
         const product = await Product.findById(id);
         if (!product) {
@@ -39,7 +39,9 @@ export async function PUT(req, { params }) {
         };
 
         product.productName = productName;
+        product.brand = brand;
         product.category = category;
+        product.subCategory = subCategory;
         product.productKey = productKey;
         product.price = price;
         product.discount = discount;

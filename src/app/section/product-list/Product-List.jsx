@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { useProducts } from '@/hooks/useProducts'
 import { useState, useMemo } from 'react'
 import { Input } from '@/components/ui/input'
+import SearchIcon from '@mui/icons-material/Search';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,125 +54,130 @@ export default function ProductList() {
       transition={{ duration: 0.5 }}
       className="p-3"
     >
-      <div className='flex justify-between items-center'>
-        <h2 className="text-2xl text-center font-bold mb-6">All Products</h2>
-        <Input
-          type="text"
-          placeholder="Search by product name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="mb-4 w-[300px] px-4 py-2 border border-gray-300 rounded-md  dark:bg-neutral-800 dark:text-white"
-        />
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
+        <h2 className="text-2xl font-bold text-center sm:text-left">All Products</h2>
+
+        <div className="relative w-full sm:w-[300px]">
+          <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          <Input
+            type="text"
+            placeholder="Search by product name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10 py-2 border border-gray-300 rounded-md dark:bg-neutral-800 dark:text-white w-full"
+          />
+        </div>
       </div>
-      {data.length === 0 ? (
-        <div className="text-center py-20 text-gray-500 dark:text-gray-400 text-lg">
-          No products found.
-        </div>
-      ) : (
-        <div className="overflow-x-auto border rounded-lg shadow-sm">
-          <table className="min-w-full text-sm">
-            <thead className="bg-muted dark:bg-muted/30 text-left text-gray-700 dark:text-gray-200">
-              <tr>
-                <th className="p-4">Product</th>
-                <th className="p-4">Category</th>
-                <th className="p-4">Price</th>
-                <th className="p-4">Discount</th>
-                <th className="p-4">Discount-Price</th>
-                <th className="p-4">Stock</th>
-                <th className="p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {filteredProducts.map((product) => (
-                < tr
-                  key={product._id}
-                  className="transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/50"
-                >
-                  <td className="p-4 flex items-center gap-4">
-                    <div className="w-12 h-12 overflow-hidden rounded-lg">
-                      <img
-                        src={product.productImage[0]}
-                        alt={product.productName}
-                        className="w-full h-full object-cover transform transition-transform duration-200 hover:scale-105"
-                      />
-                    </div>
-                    <span className="font-medium truncate w-[150px] text-gray-800 dark:text-gray-100">
-                      {product.productName}
-                    </span>
-                  </td>
-                  <td className="p-4 text-gray-600 dark:text-gray-300">{product.category}</td>
-                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
-                    ₹{product.price}
-                  </td>
-                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
-                    {product.discount}%
-                  </td>
-                  <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
-                    ₹{product.discountPrice}
-                  </td>
-                  <td>
-                    {product.inStock ? (
-                      <div className="text-green-600 p-2 text-center font-bold rounded-md bg-green-300/30 dark:text-green-400">Available</div>
-                    ) : (
-                      <div className="text-red-600 p-2 text-center font-bold bg-red-300/30 rounded-md dark:text-red-400">UnAvailable</div>
-                    )}
-                  </td>
-                  <td className="p-4">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem 
-                          onClick={() => router.push(`/dashboard/addProducts/${product._id}`)}
-                          className="cursor-pointer"
-                        >
-                          <Edit className="mr-2 h-4 w-4" />
-                          <span>Edit</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="cursor-pointer">
-                          <Eye className="mr-2 h-4 w-4" />
-                          <span>View</span>
-                        </DropdownMenuItem>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <DropdownMenuItem 
-                              onSelect={(e) => e.preventDefault()}
-                              className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
-                            >
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              <span>Delete</span>
-                            </DropdownMenuItem>
-                          </DialogTrigger>
-                          <DialogContent>
-                            <DialogHeader>
-                              <DialogTitle>Are you sure?</DialogTitle>
-                              <DialogDescription>
-                                This action cannot be undone. This will permanently delete the product.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <DialogFooter>
-                              <Button variant="outline">Cancel</Button>
-                              <Button 
-                                variant="destructive"
-                                onClick={() => handleDelete(product._id)}
-                              >
-                                Delete
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
+      {
+        data.length === 0 ? (
+          <div className="text-center py-20 text-gray-500 dark:text-gray-400 text-lg">
+            No products found.
+          </div>
+        ) : (
+          <div className="overflow-x-auto border rounded-lg shadow-sm">
+            <table className="min-w-full text-sm">
+              <thead className="bg-muted dark:bg-muted/30 text-left text-gray-700 dark:text-gray-200">
+                <tr>
+                  <th className="p-4">Product</th>
+                  <th className="p-4">Category</th>
+                  <th className="p-4">Price</th>
+                  <th className="p-4">Discount</th>
+                  <th className="p-4">Discount-Price</th>
+                  <th className="p-4">Stock</th>
+                  <th className="p-4">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {filteredProducts.map((product) => (
+                  < tr
+                    key={product._id}
+                    className="transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/50"
+                  >
+                    <td className="p-4 flex items-center gap-4">
+                      <div className="w-12 h-12 overflow-hidden rounded-lg">
+                        <img
+                          src={product.productImage[0]}
+                          alt={product.productName}
+                          className="w-full h-full object-cover transform transition-transform duration-200 hover:scale-105"
+                        />
+                      </div>
+                      <span className="font-medium truncate w-[150px] text-gray-800 dark:text-gray-100">
+                        {product.productName}
+                      </span>
+                    </td>
+                    <td className="p-4 text-gray-600 dark:text-gray-300">{product.category}</td>
+                    <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
+                      ₹{product.price}
+                    </td>
+                    <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
+                      {product.discount}%
+                    </td>
+                    <td className="p-4 text-gray-800 dark:text-gray-100 font-semibold">
+                      ₹{product.discountPrice}
+                    </td>
+                    <td>
+                      {product.inStock ? (
+                        <div className="text-green-600 p-2 text-center font-bold rounded-md bg-green-300/30 dark:text-green-400">Available</div>
+                      ) : (
+                        <div className="text-red-600 p-2 text-center font-bold bg-red-300/30 rounded-md dark:text-red-400">UnAvailable</div>
+                      )}
+                    </td>
+                    <td className="p-4">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreVertical className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => router.push(`/dashboard/addProducts/${product._id}`)}
+                            className="cursor-pointer"
+                          >
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Edit</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="cursor-pointer">
+                            <Eye className="mr-2 h-4 w-4" />
+                            <span>View</span>
+                          </DropdownMenuItem>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                className="cursor-pointer text-red-600 focus:text-red-600 "
+                              >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                <span>Delete</span>
+                              </DropdownMenuItem>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Are you sure?</DialogTitle>
+                                <DialogDescription>
+                                  This action cannot be undone. This will permanently delete the product.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <Button variant="outline">Cancel</Button>
+                                <Button
+                                  variant="destructive"
+                                  onClick={() => handleDelete(product._id)}
+                                >
+                                  Delete
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )
       }
     </motion.div >
   )

@@ -252,7 +252,7 @@ const ImageDropZone = ({
       </Box>
       
       {images.length > 0 && (
-        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1, textAlign: 'center' }}>
+        <Typography variant="caption" sx={{ display: 'block', mt: 1, textAlign: 'center' }} className='dark:text-white text-black '>
           {images.length}/{maxFiles} images uploaded
         </Typography>
       )}

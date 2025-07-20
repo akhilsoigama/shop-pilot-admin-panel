@@ -25,7 +25,9 @@ export async function POST(req) {
 
         const {
             productName,
+            brand,
             category,
+            subCategory,
             productKey,
             price,
             discount,
@@ -60,7 +62,9 @@ export async function POST(req) {
 
         const product = new Product({
             productName,
+            brand,
             category,
+            subCategory,
             productKey: generatedProductKey,
             price,
             discount,

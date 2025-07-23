@@ -123,9 +123,4 @@ export async function POST(req) {
   }
 }
 
-export async function OPTIONS() {
-  return new Response(null, {
-    status: 204,
-    headers: corsHeaders,
-  });
-}
+

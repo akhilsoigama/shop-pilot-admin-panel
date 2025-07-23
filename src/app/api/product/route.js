@@ -7,30 +7,39 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-08-16",
 });
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "http://localhost:3000"||"https://shop-pilot-xi.vercel.app", 
-  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type",
-};
+function getCorsHeaders(origin) {
+  const allowedOrigins = [
+    "http://localhost:3000",
+    "https://shop-pilot-xi.vercel.app",
+  ];
 
-export function OPTIONS() {
-  return NextResponse.json({}, { status: 200, headers: corsHeaders });
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+  };
 }
 
-
-
+export function OPTIONS(req) {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+  return NextResponse.json({}, { status: 200, headers: corsHeaders });
+}
 
 export async function GET(req) {
   await connectDB();
 
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   const { searchParams } = new URL(req.url);
-  const category = searchParams.get('category');
+  const category = searchParams.get("category");
 
   try {
     let products;
     if (category) {
       products = await Product.find({
-        category: { $regex: new RegExp(`^${category}$`, 'i') }, 
+        category: { $regex: new RegExp(`^${category}$`, "i") },
       });
     } else {
       products = await Product.find();
@@ -38,15 +47,17 @@ export async function GET(req) {
 
     return NextResponse.json(products, { status: 200, headers: corsHeaders });
   } catch (error) {
-    return NextResponse(JSON.stringify({ error: 'Failed to fetch products' }), {
+    return NextResponse.json({ error: "Failed to fetch products" }, {
       status: 500,
-      headers: corsHeaders
+      headers: corsHeaders,
     });
   }
 }
 
-
 export async function POST(req) {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   try {
     await connectDB();
 
@@ -113,14 +124,12 @@ export async function POST(req) {
 
     await product.save();
 
-    return NextResponse.json(product, { status: 201, headers: corsHeaders, });
+    return NextResponse.json(product, { status: 201, headers: corsHeaders });
   } catch (error) {
     console.error("Error in add product", error);
     return NextResponse.json(
       { message: "Failed to add product", error: error.message },
-      { status: 400, headers: corsHeaders, }
+      { status: 400, headers: corsHeaders }
     );
   }
 }
-
-

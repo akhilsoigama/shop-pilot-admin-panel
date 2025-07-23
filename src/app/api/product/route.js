@@ -7,14 +7,26 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-08-16",
 });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "http://localhost:3000"||"https://shop-pilot-xi.vercel.app", // or "*" for all
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
 export async function GET(req) {
   try {
     await connectDB();
     const product = await Product.find();
-    return NextResponse.json(product, { status: 200 });
+    return NextResponse.json(product, {
+      status: 200,
+      headers: corsHeaders,
+    });
   } catch (error) {
     console.log("Error in get all products", error);
-    return NextResponse.json({ message: "Failed to get all products" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to get all products" },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 
@@ -39,9 +51,9 @@ export async function POST(req) {
     const slugify = (str) =>
       str
         .toLowerCase()
-        .replace(/[^\w\s]/gi, '')
+        .replace(/[^\w\s]/gi, "")
         .trim()
-        .replace(/\s+/g, '-');
+        .replace(/\s+/g, "-");
 
     const generatedProductKey = productKey || `${slugify(productName)}-${Date.now()}`;
 
@@ -55,14 +67,14 @@ export async function POST(req) {
       images: productImage?.length > 0 ? [productImage[0]] : [],
       metadata: {
         category,
-        subCategory: subCategory || '',
+        subCategory: subCategory || "",
         productKey: generatedProductKey,
       },
     });
 
     const stripePrice = await stripe.prices.create({
       unit_amount: Math.round(discountPrice * 100),
-      currency: 'inr',
+      currency: "inr",
       product: stripeProduct.id,
     });
 
@@ -85,12 +97,23 @@ export async function POST(req) {
 
     await product.save();
 
-    return NextResponse.json(product, { status: 201 });
+    return NextResponse.json(product, {
+      status: 201,
+      headers: corsHeaders,
+    });
   } catch (error) {
     console.error("Error in add product", error);
     return NextResponse.json(
       { message: "Failed to add product", error: error.message },
-      { status: 400 }
+      { status: 400, headers: corsHeaders }
     );
   }
+}
+
+// ✅ Add this OPTIONS handler
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
 }

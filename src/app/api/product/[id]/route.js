@@ -54,95 +54,77 @@ export async function DELETE(req, { params }) {
 }
 
 export async function PUT(req, { params }) {
-    try {
-        await connectDB();
-        const { id } = await params;
-        const {
-            productName,
-            brand,
-            category,
-            subCategory,
-            productKey,
-            price,
-            discount,
-            discountPrice,
-            inStock,
-            productImage,
-            productDescription,
-        } = await req.json();
+  try {
+    await connectDB();
 
-        const product = await Product.findById(id);
-        if (!product) {
-            return NextResponse.json({ message: "Product not found" }, { status: 404 });
-        }
+    const id = params.id;
+    const {
+      productName,
+      category,
+      productKey,
+      price,
+      discount,
+      discountPrice,
+      inStock,
+      productImage,
+      productDescription,
+    } = await req.json();
 
-        // 🔁 Assign updated fields dynamically to avoid repetition
-        Object.assign(product, {
-            productName,
-            brand,
-            category,
-            subCategory,
-            productKey,
-            price,
-            discount,
-            discountPrice,
-            inStock,
-            productImage,
-            productDescription,
-        });
-
-        // Create Stripe product if not present
-        if (!product.stripeProductId) {
-            const stripeProduct = await stripe.products.create({
-                name: productName,
-                description: productDescription,
-                images: Array.isArray(productImage) ? productImage : [productImage],
-                metadata: {
-                    category,
-                    productKey,
-                },
-            });
-            product.stripeProductId = stripeProduct.id;
-        } else {
-            try {
-                await stripe.products.update(product.stripeProductId, {
-                    name: productName,
-                    description: productDescription,
-                    images: Array.isArray(productImage) ? productImage : [productImage],
-                    active: true,
-                });
-            } catch (err) {
-                console.warn("Stripe product update failed:", err.message);
-            }
-        }
-
-        // Deactivate previous Stripe price if exists
-        if (product.stripePriceId) {
-            try {
-                await stripe.prices.update(product.stripePriceId, { active: false });
-            } catch (err) {
-                console.warn("Stripe price deactivate failed:", err.message);
-            }
-        }
-
-        const stripePrice = await stripe.prices.create({
-            unit_amount: Math.round((discountPrice || price) * 100),
-            currency: "inr",
-            product: product.stripeProductId,
-        });
-
-        product.stripePriceId = stripePrice.id;
-
-        const updatedProduct = await product.save();
-
-        return NextResponse.json(updatedProduct, { status: 200 });
-
-    } catch (error) {
-        console.error("Error in PUT /product/[id]", error);
-        return NextResponse.json(
-            { message: "Failed to update", error: error.message },
-            { status: 500 }
-        );
+    const product = await Product.findById(id);
+    if (!product) {
+      return NextResponse.json({ message: "Product not found" }, { status: 404 });
     }
+
+    // ✅ Deactivate previous Stripe price
+    if (product.stripePriceId) {
+      try {
+        await stripe.prices.update(product.stripePriceId, { active: false });
+      } catch (err) {
+        console.warn("Stripe price deactivation failed:", err.message);
+      }
+    }
+
+    // ✅ Create new Stripe price
+    const newStripePrice = await stripe.prices.create({
+      unit_amount: Math.round((discountPrice || price) * 100),
+      currency: "inr",
+      product: product.stripeProductId, // Must exist
+    });
+
+    // ✅ Update Stripe product (optional)
+    try {
+      await stripe.products.update(product.stripeProductId, {
+        name: productName,
+        description: productDescription,
+        images: productImage?.length > 0 ? [productImage[0]] : [],
+        active: true,
+      });
+    } catch (err) {
+      console.warn("Stripe product update failed:", err.message);
+    }
+
+    // ✅ Update in DB
+    product.productName = productName;
+    product.category = category;
+    product.productKey = productKey;
+    product.price = price;
+    product.discount = discount;
+    product.discountPrice = discountPrice;
+    product.inStock = inStock;
+    product.productImage = productImage;
+    product.productDescription = productDescription;
+    product.stripePriceId = newStripePrice.id;
+
+    const updatedProduct = await product.save();
+
+    return NextResponse.json(updatedProduct, { status: 200 });
+  } catch (error) {
+    console.error("Error in update product", error);
+    return NextResponse.json(
+      { message: "Failed to update product", error: error.message },
+      { status: 500 }
+    );
+  }
 }
+
 

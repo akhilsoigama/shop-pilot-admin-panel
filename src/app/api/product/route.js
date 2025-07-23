@@ -67,9 +67,9 @@ export async function POST(req) {
     const slugify = (str) =>
       str
         .toLowerCase()
-        .replace(/[^\w\s]/gi, '')
+        .replace(/[^\w\s]/gi, "")
         .trim()
-        .replace(/\s+/g, '-');
+        .replace(/\s+/g, "-");
 
     const generatedProductKey = productKey || `${slugify(productName)}-${Date.now()}`;
 
@@ -83,14 +83,14 @@ export async function POST(req) {
       images: productImage?.length > 0 ? [productImage[0]] : [],
       metadata: {
         category,
-        subCategory: subCategory || '',
+        subCategory: subCategory || "",
         productKey: generatedProductKey,
       },
     });
 
     const stripePrice = await stripe.prices.create({
       unit_amount: Math.round(discountPrice * 100),
-      currency: 'inr',
+      currency: "inr",
       product: stripeProduct.id,
     });
 
@@ -121,4 +121,11 @@ export async function POST(req) {
       { status: 400, headers: corsHeaders, }
     );
   }
+}
+
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
 }

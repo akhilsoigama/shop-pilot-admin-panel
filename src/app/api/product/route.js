@@ -7,16 +7,44 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
   apiVersion: "2023-08-16",
 });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "http://localhost:3000"||"https://shop-pilot-xi.vercel.app", 
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export function OPTIONS() {
+  return NextResponse.json({}, { status: 200, headers: corsHeaders });
+}
+
+
+
+
 export async function GET(req) {
+  await connectDB();
+
+  const { searchParams } = new URL(req.url);
+  const category = searchParams.get('category');
+
   try {
-    await connectDB();
-    const product = await Product.find();
-    return NextResponse.json(product, { status: 200 });
+    let products;
+    if (category) {
+      products = await Product.find({
+        category: { $regex: new RegExp(`^${category}$`, 'i') }, 
+      });
+    } else {
+      products = await Product.find();
+    }
+
+    return NextResponse.json(products, { status: 200, headers: corsHeaders });
   } catch (error) {
-    console.log("Error in get all products", error);
-    return NextResponse.json({ message: "Failed to get all products" }, { status: 500 });
+    return NextResponse(JSON.stringify({ error: 'Failed to fetch products' }), {
+      status: 500,
+      headers: corsHeaders
+    });
   }
 }
+
 
 export async function POST(req) {
   try {
@@ -85,12 +113,12 @@ export async function POST(req) {
 
     await product.save();
 
-    return NextResponse.json(product, { status: 201 });
+    return NextResponse.json(product, { status: 201, headers: corsHeaders, });
   } catch (error) {
     console.error("Error in add product", error);
     return NextResponse.json(
       { message: "Failed to add product", error: error.message },
-      { status: 400 }
+      { status: 400, headers: corsHeaders, }
     );
   }
 }

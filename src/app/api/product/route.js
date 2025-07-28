@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
 });
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "http://localhost:3000"||"https://shop-pilot-xi.vercel.app", 
+  "Access-Control-Allow-Origin": "http://localhost:3000" || "https://shop-pilot-xi.vercel.app",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
@@ -20,30 +20,34 @@ export function OPTIONS() {
 
 
 
+export const dynamic = "force-dynamic";
+
 export async function GET(req) {
   await connectDB();
 
-  const { searchParams } = new URL(req.url);
-  const category = searchParams.get('category');
+   const { searchParams } = new URL(req.url);
+  const category = searchParams.get("category");
+  const subcategory = searchParams.get("subcategory");
+
+  const filter = {};
+
+  if (category) {
+    filter.category = { $regex: new RegExp(`^${category}$`, "i") };
+  }
+
+  if (subcategory) {
+    filter.subCategory = { $regex: new RegExp(`^${subcategory}$`, "i") };
+  }
 
   try {
-    let products;
-    if (category) {
-      products = await Product.find({
-        category: { $regex: new RegExp(`^${category}$`, 'i') }, 
-      });
-    } else {
-      products = await Product.find();
-    }
-
+    const products = await Product.find(filter);
     return NextResponse.json(products, { status: 200, headers: corsHeaders });
-  } catch (error) {
-    return NextResponse(JSON.stringify({ error: 'Failed to fetch products' }), {
-      status: 500,
-      headers: corsHeaders
-    });
+  } catch (err) {
+    console.error("Error fetching products:", err);
+    return NextResponse.json({ message: "Error fetching products" }, { status: 500, headers: corsHeaders });
   }
 }
+
 
 
 export async function POST(req) {

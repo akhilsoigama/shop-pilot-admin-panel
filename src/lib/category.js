@@ -13,7 +13,6 @@ export const categories = [
     'Pet Supplies',
     'Office Supplies',
     'Jewelry & Accessories',
-    'Footwear',
     'Tools & Hardware',
     'Furniture & Decor',
     'Mobile Phones & Accessories',
@@ -41,9 +40,9 @@ export const Subcategories = [
     {
         name: 'Fashion & Apparel',
         subcategories: [
-            'Men\'s Clothing',
-            'Women\'s Clothing',
-            'Kids\' Clothing',
+            "Men's Clothing",
+            "Women's Clothing",
+            "Kid's Clothing",
             'Shoes',
             'Bags',
             'Watches',

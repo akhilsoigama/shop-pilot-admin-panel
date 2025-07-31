@@ -1,4 +1,3 @@
-import React from 'react'
 import AddProductsNewEditForm from '@/app/section/add-products/add-product-new-edit-form'
 
 const page = () => {

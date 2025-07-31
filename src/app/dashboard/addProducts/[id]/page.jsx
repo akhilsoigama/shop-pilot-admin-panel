@@ -3,7 +3,7 @@ import AddProductsNewEditForm from '@/app/section/add-products/add-product-new-e
 import { useProducts } from '@/hooks/useProducts'
 import React, { use } from 'react'
 
-const page = ({ params }) => {
+const Page = ({ params }) => {
     const { id } = use(params)
     const { product } = useProducts().getProduct(id)
     return (
@@ -13,4 +13,4 @@ const page = ({ params }) => {
     )
 }
 
-export default page
+export default Page

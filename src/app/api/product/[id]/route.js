@@ -7,7 +7,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
     apiVersion: "2023-08-16",
 });
 
-// GET product by ID
 export async function GET(req, { params }) {
     try {
         await connectDB();
@@ -25,7 +24,6 @@ export async function GET(req, { params }) {
     }
 }
 
-// DELETE product
 export async function DELETE(req, { params }) {
     try {
         await connectDB();
@@ -57,10 +55,11 @@ export async function PUT(req, { params }) {
   try {
     await connectDB();
 
-    const id = params.id;
+    const id = await params.id;
     const {
       productName,
       category,
+      subCategory,
       productKey,
       price,
       discount,
@@ -75,7 +74,6 @@ export async function PUT(req, { params }) {
       return NextResponse.json({ message: "Product not found" }, { status: 404 });
     }
 
-    // ✅ Deactivate previous Stripe price
     if (product.stripePriceId) {
       try {
         await stripe.prices.update(product.stripePriceId, { active: false });
@@ -84,14 +82,12 @@ export async function PUT(req, { params }) {
       }
     }
 
-    // ✅ Create new Stripe price
     const newStripePrice = await stripe.prices.create({
       unit_amount: Math.round((discountPrice || price) * 100),
       currency: "inr",
-      product: product.stripeProductId, // Must exist
+      product: product.stripeProductId, 
     });
 
-    // ✅ Update Stripe product (optional)
     try {
       await stripe.products.update(product.stripeProductId, {
         name: productName,
@@ -103,9 +99,9 @@ export async function PUT(req, { params }) {
       console.warn("Stripe product update failed:", err.message);
     }
 
-    // ✅ Update in DB
     product.productName = productName;
     product.category = category;
+    product.subCategory = subCategory;
     product.productKey = productKey;
     product.price = price;
     product.discount = discount;

@@ -1,9 +1,20 @@
-export const metadata = {
-  title: "Dashboard",
-  description: "Overview of your admin panel",
-}
+'use client'
+import { useRouter } from "next/navigation"
+import { useEffect } from "react"
+
+
 
 export default function DashboardHome() {
+
+    const router = useRouter()
+
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (!token) {
+      router.replace('/login')
+    }
+  }, [])
+
   return (
     // <div className="grid gap-4 md:grid-cols-3">
     //   <div className="bg-muted/50 aspect-video rounded-xl" />

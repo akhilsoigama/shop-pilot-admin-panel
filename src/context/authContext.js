@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Cookies from 'js-cookie'
 
 export const AuthContext = createContext()
 
@@ -11,18 +12,22 @@ export function AuthProvider({ children }) {
   const router = useRouter()
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user')
-    const storedToken = localStorage.getItem('token')
+    const storedUser = Cookies.get('user')
+    const storedToken = Cookies.get('token')
 
     if (storedUser && storedToken) {
-      setUser(JSON.parse(storedUser))
-      setToken(storedToken)
+      try {
+        setUser(JSON.parse(storedUser))
+        setToken(storedToken)
+      } catch (error) {
+        console.error("Failed to parse user from cookies:", error)
+      }
     }
   }, [])
 
   const logout = () => {
-    localStorage.removeItem('user')
-    localStorage.removeItem('token')
+    Cookies.remove('user')
+    Cookies.remove('token')
     setUser(null)
     setToken(null)
     router.push('/')
@@ -35,7 +40,6 @@ export function AuthProvider({ children }) {
   )
 }
 
-// Custom hook (optional but useful)
 export function useAuth() {
   return useContext(AuthContext)
 }

@@ -24,23 +24,26 @@ export const verifyToken = (token) => {
   }
 };
 
-
+// ✅ Updated to get token from cookie
 export async function getUserFromHeader(req) {
   try {
     await connectDB();
-    const authHeader = req.headers.get('authorization')
-    if (!authHeader || !authHeader.startsWith('Bearer ')) return null
 
-    const token = authHeader.split(' ')[1]
-    const decoded = jwt.verify(token, process.env.JWT_SECRET)
+    const cookie = req.headers.get("cookie");
+    if (!cookie) return null;
 
-    const user = await UserModel.findById(decoded.id).populate({
-      path: 'role',
-      populate: { path: 'permissions' }
-    })
+    const token = cookie
+      .split(";")
+      .find((c) => c.trim().startsWith("token="))
+      ?.split("=")[1];
 
-    return user
+    if (!token) return null;
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await UserModel.findById(decoded.id);
+
+    return user;
   } catch (err) {
-    return null
+    return null;
   }
 }

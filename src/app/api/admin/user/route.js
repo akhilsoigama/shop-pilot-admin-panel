@@ -1,6 +1,6 @@
+import UserModel from '@/app/model/user';
 import { connectDB } from '@/lib/db';
 import { requirePermission } from '@/lib/requirePermission';
-import UserModel from '@/app/model/user';
 import bcrypt from 'bcrypt';
 import { NextResponse } from 'next/server';
 

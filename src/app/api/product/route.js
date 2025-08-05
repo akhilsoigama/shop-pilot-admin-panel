@@ -1,5 +1,6 @@
 import Product from "@/app/model/Product";
 import { connectDB } from "@/lib/db";
+import { requirePermission } from "@/lib/requirePermission";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
@@ -29,6 +30,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(req) {
   await connectDB();
+  const error = await requirePermission("read-product")(req);
+  if (error) return error;
+
   const origin = req.headers.get("origin");
   const corsHeaders = getCorsHeaders(origin);
 
@@ -64,7 +68,8 @@ export async function POST(req) {
 
   try {
     await connectDB();
-
+    const error = await requirePermission("create-product")(req);
+    if (error) return error;
     const {
       productName,
       brand,

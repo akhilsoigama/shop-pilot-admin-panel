@@ -25,14 +25,5 @@ export const permissionMatrix = [
       update: "update-role",
       delete: "delete-role",
     },
-  },
-  {
-    name: "Permission",
-    keys: {
-      create: "create-permission",
-      read: "read-permission",
-      update: "update-permission",
-      delete: "delete-permission",
-    },
-  },
+  }
 ]

@@ -166,7 +166,6 @@ export const Subcategories = [
         name: 'Office Supplies',
         subcategories: [
             'Stationery',
-            'Printers & Ink',
             'Office Furniture',
             'Filing Products',
             'Organizers',
@@ -179,15 +178,14 @@ export const Subcategories = [
             'Earrings',
             'Bracelets',
             'Rings',
-            'Watches',
             'Hair Accessories',
         ],
     },
     {
         name: 'Footwear',
         subcategories: [
-            'Men\'s Footwear',
-            'Women\'s Footwear',
+            "Men's Footwear",
+            "Women's Footwear",
             'Kids\' Footwear',
             'Sports Shoes',
             'Sandals & Slippers',
@@ -237,8 +235,8 @@ export const Subcategories = [
     {
         name: 'Watches & Wearables',
         subcategories: [
-            'Men\'s Watches',
-            'Women\'s Watches',
+            "Men's Watches",
+            "Women's Watches",
             'Smart Watches',
             'Fitness Bands',
         ],

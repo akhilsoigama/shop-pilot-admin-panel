@@ -1,4 +1,4 @@
-import UserRole from "@/app/model/role";
+import Role from "@/app/model/role";
 import { connectDB } from "@/lib/db";
 import { requirePermission } from "@/lib/requirePermission";
 import { NextResponse } from "next/server";
@@ -14,17 +14,17 @@ export async function POST(req) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const exists = await UserRole.findOne({ name });
+  const exists = await Role.findOne({ name });
   if (exists) {
     return NextResponse.json({ error: "Role already exists" }, { status: 409 });
   }
 
-  const role = await UserRole.create({ name, permissions });
+  const role = await Role.create({ name, permissions });
   return NextResponse.json(role);
 }
 
 export async function GET() {
   await connectDB();
-  const roles = await UserRole.find();
+  const roles = await Role.find();
   return NextResponse.json(roles);
 }

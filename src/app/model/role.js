@@ -1,3 +1,4 @@
+// app/model/role.js
 import mongoose from "mongoose";
 
 const RoleSchema = new mongoose.Schema({
@@ -5,5 +6,5 @@ const RoleSchema = new mongoose.Schema({
   permissions: [{ type: String, required: true }] 
 });
 
-const UserRole = mongoose.models.Role || mongoose.model("Role", RoleSchema);
-export default UserRole;
+const Role = mongoose.models.Role || mongoose.model("Role", RoleSchema);
+export default Role;

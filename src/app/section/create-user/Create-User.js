@@ -215,7 +215,7 @@ export default function CreateUser() {
               className="text-center"
             >
               <Card className="shadow-lg overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+                <CardHeader className="bg-gradient-to-r p-2 from-green-500 to-green-600 ">
                   <div className="flex flex-col items-center space-y-3">
                     <CheckCircle className="h-12 w-12" />
                     <CardTitle>User Created Successfully!</CardTitle>
@@ -224,16 +224,14 @@ export default function CreateUser() {
                 <CardContent className="p-6 space-y-6">
                   <div className="flex flex-col items-center space-y-4">
                     <Avatar className="h-16 w-16">
-                      <AvatarFallback className="bg-primary text-white text-xl">
+                      <AvatarFallback className="text-xl">
                         {createdUser?.email?.charAt(0).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="text-lg font-medium">
                       {createdUser?.email}
                     </div>
-                    <Badge variant="outline" className="text-sm">
-                      {createdUser?.role?.name || 'No role assigned'}
-                    </Badge>
+                    
                   </div>
 
                   <Separator className="my-4" />
@@ -245,7 +243,7 @@ export default function CreateUser() {
                         <Badge variant="default">Active</Badge>
                       </p>
                     </div>
-                    <div className="text-left">
+                    <div className="text-right">
                       <p className="text-sm text-muted-foreground">Created At</p>
                       <p className="font-medium">
                         {new Date().toLocaleDateString()}
@@ -253,7 +251,7 @@ export default function CreateUser() {
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                  <div className="flex flex-col gap-3 pt-4">
                     <Button
                       onClick={handleReset}
                       className="w-full"

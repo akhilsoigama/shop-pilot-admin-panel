@@ -1,4 +1,4 @@
-import UserRole from "@/app/model/role";
+import Role from "@/app/model/role";
 import { connectDB } from "@/lib/db";
 import { requirePermission } from "@/lib/requirePermission";
 import { NextResponse } from "next/server";
@@ -14,7 +14,7 @@ export async function PUT(req, { params }) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const role = await UserRole.findByIdAndUpdate(
+  const role = await Role.findByIdAndUpdate(
     params.id,
     { name, permissions },
     { new: true }
@@ -28,6 +28,6 @@ export async function DELETE(req, { params }) {
   const error = await requirePermission("delete-role")(req);
   if (error) return error;
 
-  await UserRole.findByIdAndDelete(params.id);
+  await Role.findByIdAndDelete(params.id);
   return NextResponse.json({ success: true });
 }

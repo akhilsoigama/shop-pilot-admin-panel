@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 import { RHFDropdown } from '@/app/components/controllers/RHFDropdown';
 import { useRouter } from 'next/navigation';
 import RHFCheckboxField from '@/app/components/controllers/RHFCheckboxField';
-import { categories, Subcategories } from '@/lib/category';
+import { categories, getFieldsForSubcategory, Subcategories } from '@/lib/category';
 
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
@@ -30,7 +30,7 @@ const productSchema = z.object({
   discountPrice: z.coerce.number().default(0),
   discount: z.coerce.number().min(0).max(100).optional(),
   quantity: z.number().default(1),
-});
+}).passthrough();
 
 const slugify = (str) =>
   str
@@ -39,13 +39,13 @@ const slugify = (str) =>
     .trim()
     .replace(/\s+/g, '-');
 
-const AddProductsNewEditForm = ({ productData }) => {
+export const AddProductsNewEditForm = ({ productData }) => {
   const { createProduct, updateProduct } = useProducts();
   const isEditMode = !!productData?._id;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [filteredSubcategories, setFilteredSubcategories] = useState([]);
-  const initializingRef = useRef(true); // Track initialization state
+  const initializingRef = useRef(true); 
 
   const {
     control,
@@ -69,6 +69,7 @@ const AddProductsNewEditForm = ({ productData }) => {
       discount: 0,
       discountPrice: 0,
       quantity: 1,
+      extraFields: {},
     },
   });
 
@@ -76,6 +77,9 @@ const AddProductsNewEditForm = ({ productData }) => {
   const price = watch('price');
   const discount = watch('discount');
   const selectedCategory = watch('category');
+  const selectedSubcategory = watch('subCategory');
+  const extraFields = getFieldsForSubcategory(selectedCategory, selectedSubcategory);
+
 
   useEffect(() => {
     if (!isEditMode && productName?.length > 2) {
@@ -125,14 +129,26 @@ const AddProductsNewEditForm = ({ productData }) => {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
+      // 1. Extract values from extraFields and transform to `specifications`
+      const specifications = extraFields.map(field => ({
+        name: field.name,
+        value: data?.extraFields?.[field.name] || '',
+        type: field.type,
+      }));
+
+      const finalData = {
+        ...data,
+        specifications,
+      };
+
+      // 2. Create or update the product
       if (isEditMode) {
-        await updateProduct(productData._id, data);
+        await updateProduct(productData._id, finalData);
         toast.success('Product updated successfully!');
         router.push('/dashboard/product');
       } else {
-        await createProduct(data);
+        await createProduct(finalData);
         toast.success('Product created successfully!');
-
         reset({
           productName: '',
           brand: '',
@@ -146,6 +162,7 @@ const AddProductsNewEditForm = ({ productData }) => {
           discountPrice: 0,
           quantity: 0,
           productImage: null,
+          extraFields: {},
         });
 
         if (typeof window !== 'undefined') {
@@ -158,118 +175,101 @@ const AddProductsNewEditForm = ({ productData }) => {
         error.response?.data?.message ||
         `Failed to ${isEditMode ? 'update' : 'create'} product`
       );
-    }
-    finally {
+    } finally {
       setIsSubmitting(false);
     }
   };
 
+
   const handleCancel = () => {
     router.push('/dashboard/product');
   };
+
+  const SectionTitle = ({ icon, title }) => (
+    <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
+      {icon} {title}
+    </h2>
+  );
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: 'easeOut' }}
-      className="max-w-5xl mt-4 mx-auto p-2 md:p-10 bg-white dark:bg-neutral-900 rounded-xl shadow-md"
+      className="max-w-6xl w-full mx-auto mt-6 p-4 md:p-8 bg-white dark:bg-neutral-900 rounded-xl shadow-lg"
     >
       <div className="text-center mb-10">
         <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 flex items-center justify-center gap-2">
-          {isEditMode ? <UpdateIcon className="text-blue-500" /> : <FiPlus className="text-blue-500" />}    {isEditMode ? 'Update Product' : 'Add New Product'}
+          {isEditMode ? <UpdateIcon className="text-blue-500" /> : <FiPlus className="text-blue-500" />}
+          {isEditMode ? 'Update Product' : 'Add New Product'}
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Fill in the details below to list a new product in your inventory.
+        <p className="text-gray-600 dark:text-gray-400 mt-2 text-sm md:text-base">
+          Fill in the details below to {isEditMode ? 'update your product' : 'add a new product to your inventory'}.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
-        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
-            <FiInfo className="text-blue-500" /> Basic Information
-          </h2>
+      <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-10">
+        {/* Basic Info */}
+        <section className="form-section">
+          <SectionTitle icon={<FiInfo />} title="Basic Information" />
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RHFFormField
-              name="productName"
-              control={control}
-              label="Product Name"
-              icon={<FiTag />}
-              error={errors.productName}
-            />
-            <RHFFormField
-              name="brand"
-              control={control}
-              label="Brand"
-              error={errors.productName}
-            />
-            <RHFDropdown
-              name="category"
-              label="Category"
-              control={control}
-              errors={errors}
-              categories={categories}
-            />
+            <RHFFormField name="productName" control={control} label="Product Name" icon={<FiTag />} error={errors.productName} />
+            <RHFFormField name="brand" control={control} label="Brand" error={errors.brand} />
+            <RHFDropdown name="category" label="Category" control={control} errors={errors} categories={categories} />
             <RHFDropdown
               name="subCategory"
               label="SubCategory"
               control={control}
               errors={errors}
-              categories={filteredSubcategories}
+              categories={filteredSubcategories.map(sub => typeof sub === 'string' ? sub : sub.name)}
             />
-            <RHFFormField
-              name="productKey"
-              control={control}
-              label="Product Key"
-              icon={<FiKey />}
-              error={errors.productKey}
-              isDisabled={true}
-            />
-            <RHFFormField
-              name="price"
-              control={control}
-              label="Price (₹)"
-              type="number"
-              icon={<FiDollarSign />}
-              error={errors.price}
-            />
-            <RHFFormField
-              name="discount"
-              control={control}
-              label="Discount (%)"
-              type="number"
-              min={0}
-              max={100}
-              error={errors.discount}
-            />
-            <RHFFormField
-              name="quantity"
-              control={control}
-              label="Quantity"
-              type="number"
-              isDisabled={true}
-              error={errors.quantity}
-            />
-            <RHFFormField
-              name="discountPrice"
-              control={control}
-              label="Discounted Price (₹)"
-              type="number"
-              isDisabled={true}
-              error={errors.discountPrice}
-            />
-            <RHFCheckboxField
-              name="inStock"
-              control={control}
-              label="In Stock"
-            />
+            <RHFFormField name="productKey" control={control} label="Product Key" icon={<FiKey />} error={errors.productKey} isDisabled />
+            <RHFFormField name="price" control={control} label="Price (₹)" type="number" icon={<FiDollarSign />} error={errors.price} />
+            <RHFFormField name="discount" control={control} label="Discount (%)" type="number" min={0} max={100} error={errors.discount} />
+            <RHFFormField name="quantity" control={control} label="Quantity" type="number" isDisabled error={errors.quantity} />
+            <RHFFormField name="discountPrice" control={control} label="Discounted Price (₹)" type="number" isDisabled error={errors.discountPrice} />
+            <RHFCheckboxField name="inStock" control={control} label="In Stock" />
           </div>
         </section>
 
-        <section className="bg-gray-50  dark:bg-neutral-800 p-4 pb-6 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200 flex items-center gap-2">
-            <FiImage className="text-blue-500" /> Product Image
-          </h2>
+        {/* Additional Fields */}
+        {extraFields.length > 0 && (
+          <section className="form-section">
+            <SectionTitle title="📦 Additional Specifications" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {extraFields.map((field, index) => {
+                const fieldName = `extraFields.${field.name}`;
+                if (field.type === 'dropdown') {
+                  return (
+                    <RHFDropdown
+                      key={index}
+                      name={fieldName}
+                      label={field.name}
+                      control={control}
+                      errors={errors}
+                      categories={field.options || []}
+                    />
+                  );
+                }
+                return (
+                  <RHFFormField
+                    key={index}
+                    name={fieldName}
+                    control={control}
+                    label={field.name}
+                    placeholder={`Enter ${field.name}${field.unit ? ` (${field.unit})` : ''}`}
+                    error={errors?.[fieldName]}
+                  />
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* Product Image */}
+        <section className="form-section">
+          <SectionTitle icon={<FiImage />} title="Product Image" />
           <RHFDropzoneField
             key={watch('productImage')}
             name="productImage"
@@ -278,10 +278,9 @@ const AddProductsNewEditForm = ({ productData }) => {
           />
         </section>
 
-        <section className="bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
-          <h2 className="text-xl font-semibold mb-4 text-gray-700 dark:text-gray-200">
-            📝 Product Description
-          </h2>
+        {/* Description */}
+        <section className="form-section">
+          <SectionTitle title="📝 Product Description" />
           <RHFContentFiled
             name="productDescription"
             control={control}
@@ -289,7 +288,8 @@ const AddProductsNewEditForm = ({ productData }) => {
           />
         </section>
 
-        <div className="flex justify-end gap-4">
+        {/* Actions */}
+        <div className="flex justify-end flex-wrap gap-4 mt-6">
           {isEditMode && (
             <motion.button
               type="button"
@@ -307,11 +307,11 @@ const AddProductsNewEditForm = ({ productData }) => {
             whileHover={!isSubmitting ? { scale: 1.05 } : {}}
             whileTap={!isSubmitting ? { scale: 0.95 } : {}}
             className={`px-6 py-2 rounded-md font-medium shadow-sm flex items-center gap-2 
-              ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} 
-              text-white dark:bg-blue-500 dark:hover:bg-blue-600`}
+            ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} 
+            text-white dark:bg-blue-500 dark:hover:bg-blue-600`}
           >
             {isSubmitting ? (
-              <IoReloadOutline  size={20} className='text-white  animate-spin' />
+              <IoReloadOutline size={20} className='text-white animate-spin' />
             ) : (
               <>
                 {isEditMode ? <UpdateIcon /> : <FiPlus />}
@@ -325,4 +325,3 @@ const AddProductsNewEditForm = ({ productData }) => {
   );
 };
 
-export default AddProductsNewEditForm;

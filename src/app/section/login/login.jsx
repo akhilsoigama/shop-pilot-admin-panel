@@ -2,12 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mail, Lock, Eye, EyeOff, ArrowLeft, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useLogin } from '@/hooks/useLogin';
 import RHFFormField from '@/app/components/controllers/RHFFormField';
 import Cookies from 'js-cookie';

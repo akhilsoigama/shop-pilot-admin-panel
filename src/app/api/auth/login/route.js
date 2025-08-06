@@ -22,7 +22,7 @@ export async function POST(req) {
     const user = await UserModel.findOne({ email }).populate('role');
     if (!user) {
       return NextResponse.json({ message: "Invalid Credentials" }, { status: 401 });
-    }
+    }  
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {

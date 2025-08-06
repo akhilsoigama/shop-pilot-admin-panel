@@ -19,7 +19,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  
+     
   const {
     form: { control, handleSubmit, formState: { errors } },
     showPassword,
@@ -254,7 +254,7 @@ export default function LoginPage() {
                     className="text-sm h-auto px-0 text-primary hover:text-primary/80"
                     onClick={() => router.push('/register')}
                   >
-                    Request access
+                    Request access  
                   </Button>
                 </p>
               </div>

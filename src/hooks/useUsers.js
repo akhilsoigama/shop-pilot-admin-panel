@@ -11,20 +11,20 @@ const fetcher = (url) =>
 export function useUsers() {
   const { data, error, isLoading, mutate } = useSWR('/api/admin/user', fetcher);
 
-  const createUser = async ({ email, password, roleId }) => {
+  const createUser = async ({name,mobile, email, password, roleId }) => {
     const res = await axios.post(
       '/api/admin/user',
-      { email, password, roleId },
+      {name,mobile, email, password, roleId },
       { headers: { Authorization: `Bearer ${token}` } }
     );
     mutate();
     return res.data;
   };
 
-  const updateUser = async (id, { email, roleId }) => {
+  const updateUser = async (id, {name,mobile, email, roleId }) => {
     const res = await axios.put(
       `/api/admin/user/${id}`,
-      { email, roleId },
+      {name, mobile, email, roleId },
       { headers: { Authorization: `Bearer ${token}` } }
     );
     mutate();

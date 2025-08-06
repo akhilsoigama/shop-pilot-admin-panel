@@ -9,9 +9,9 @@ export async function POST(req) {
   const error = await requirePermission('create-user')(req);
   if (error) return error;
 
-  const { email, password, roleId } = await req.json();
+  const { name, mobile, email, password, roleId } = await req.json();
   const hashed = await bcrypt.hash(password, 10);
-  const user = await UserModel.create({ email, password: hashed, role: roleId });
+  const user = await UserModel.create({ email, name, mobile, password: hashed, role: roleId });
   return NextResponse.json(user);
 }
 

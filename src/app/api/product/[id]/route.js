@@ -12,7 +12,7 @@ export async function GET(req, { params }) {
   try {
     await connectDB();
 
-    const { id } = params;
+    const { id } = await params;
 
     const product = await Product.findById(id);
     if (!product) {
@@ -32,7 +32,7 @@ export async function PUT(req, { params }) {
     const error = await requirePermission("update-product")(req);
     if (error) return error;
 
-    const id = params.id;
+    const id = await params.id;
     const {
       productName,
       category,
@@ -119,7 +119,7 @@ export async function DELETE(req, { params }) {
     const error = await requirePermission("delete-product")(req);
     if (error) return error;
 
-    const { id } = params;
+    const { id } = await params;
 
     const product = await Product.findById(id);
     if (!product) {

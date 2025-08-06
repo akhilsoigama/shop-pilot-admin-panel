@@ -1,5 +1,5 @@
 'use client';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -45,7 +45,7 @@ export const AddProductsNewEditForm = ({ productData }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
   const [filteredSubcategories, setFilteredSubcategories] = useState([]);
-  const initializingRef = useRef(true); 
+  const initializingRef = useRef(true);
 
   const {
     control,
@@ -78,15 +78,52 @@ export const AddProductsNewEditForm = ({ productData }) => {
   const discount = watch('discount');
   const selectedCategory = watch('category');
   const selectedSubcategory = watch('subCategory');
-  const extraFields = getFieldsForSubcategory(selectedCategory, selectedSubcategory);
+  // const extraFields = getFieldsForSubcategory(selectedCategory, selectedSubcategory);
 
+  const extraFields = useMemo(() => {
+    return getFieldsForSubcategory(selectedCategory, selectedSubcategory);
+  }, [selectedCategory, selectedSubcategory]);
 
   useEffect(() => {
-    if (!isEditMode && productName?.length > 2) {
-      const generatedKey = `PRD-${slugify(productName)}-${Date.now()}`;
-      setValue('productKey', generatedKey);
+    if (productData) {
+      const specifications = productData.specifications || [];
+
+      const extraFieldValues = specifications.reduce((acc, spec) => {
+        acc[spec.name] = spec.value;
+        return acc;
+      }, {});
+
+      reset({
+        ...productData,
+        extraFields: extraFieldValues,
+      });
+
+      setValue('category', productData.category);
+      setValue('subCategory', productData.subCategory);
+
+      if (productData.category) {
+        const found = Subcategories.find(item => item.name === productData.category);
+        const subs = found ? found.subcategories : [];
+        setFilteredSubcategories(subs);
+
+        const subcategoryMatch = subs.find(
+          sub => (typeof sub === 'string' ? sub : sub.name) === productData.subCategory
+        );
+
+        if (subcategoryMatch) {
+          setTimeout(() => {
+            setValue('subCategory', productData.subCategory);
+          }, 0);
+        }
+      }
     }
-  }, [productName, isEditMode, setValue]);
+
+    const timer = setTimeout(() => {
+      initializingRef.current = false;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }, [productData, reset, setValue]);
 
   useEffect(() => {
     const discountValue = price * (discount / 100);
@@ -97,7 +134,6 @@ export const AddProductsNewEditForm = ({ productData }) => {
   // Handle initial data setup for edit mode
   useEffect(() => {
     if (productData) {
-      reset(productData);
       if (productData.category) {
         const found = Subcategories.find(item => item.name === productData.category);
         const subs = found ? found.subcategories : [];
@@ -141,7 +177,7 @@ export const AddProductsNewEditForm = ({ productData }) => {
         specifications,
       };
 
-      // 2. Create or update the product
+      //  Create or update the product
       if (isEditMode) {
         await updateProduct(productData._id, finalData);
         toast.success('Product updated successfully!');
@@ -214,9 +250,26 @@ export const AddProductsNewEditForm = ({ productData }) => {
           <SectionTitle icon={<FiInfo />} title="Basic Information" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <RHFFormField name="productName" control={control} label="Product Name" icon={<FiTag />} error={errors.productName} />
-            <RHFFormField name="brand" control={control} label="Brand" error={errors.brand} />
-            <RHFDropdown name="category" label="Category" control={control} errors={errors} categories={categories} />
+            <RHFFormField
+              name="productName"
+              control={control}
+              label="Product Name"
+              icon={<FiTag />}
+              error={errors.productName}
+            />
+            <RHFFormField
+              name="brand"
+              control={control}
+              label="Brand"
+              error={errors.brand}
+            />
+            <RHFDropdown
+              name="category"
+              label="Category"
+              control={control}
+              errors={errors}
+              categories={categories}
+            />
             <RHFDropdown
               name="subCategory"
               label="SubCategory"
@@ -224,14 +277,52 @@ export const AddProductsNewEditForm = ({ productData }) => {
               errors={errors}
               categories={filteredSubcategories.map(sub => typeof sub === 'string' ? sub : sub.name)}
             />
-            <RHFFormField name="productKey" control={control} label="Product Key" icon={<FiKey />} error={errors.productKey} isDisabled />
-            <RHFFormField name="price" control={control} label="Price (₹)" type="number" icon={<FiDollarSign />} error={errors.price} />
-            <RHFFormField name="discount" control={control} label="Discount (%)" type="number" min={0} max={100} error={errors.discount} />
-            <RHFFormField name="quantity" control={control} label="Quantity" type="number" isDisabled error={errors.quantity} />
-            <RHFFormField name="discountPrice" control={control} label="Discounted Price (₹)" type="number" isDisabled error={errors.discountPrice} />
-            <RHFCheckboxField name="inStock" control={control} label="In Stock" />
+            <RHFFormField
+              name="productKey"
+              control={control}
+              label="Product Key"
+              icon={<FiKey />}
+              error={errors.productKey}
+              isDisabled
+            />
+            <RHFFormField
+              name="price"
+              control={control}
+              label="Price (₹)"
+              type="number"
+              icon={<FiDollarSign />}
+              error={errors.price}
+            />
+            <RHFFormField
+              name="discount"
+              control={control}
+              label="Discount (%)"
+              type="number"
+              min={0}
+              max={100}
+              error={errors.discount}
+            />
+            <RHFFormField
+              name="quantity"
+              control={control} label="Quantity"
+              type="number"
+              isDisabled
+              error={errors.quantity}
+            />
+            <RHFFormField
+              name="discountPrice"
+              control={control}
+              label="Discounted Price (₹)"
+              type="number"
+              isDisabled
+              error={errors.discountPrice}
+            />
+            <RHFCheckboxField
+              name="inStock"
+              control={control} label="In Stock" />
           </div>
         </section>
+
 
         {/* Additional Fields */}
         {extraFields.length > 0 && (

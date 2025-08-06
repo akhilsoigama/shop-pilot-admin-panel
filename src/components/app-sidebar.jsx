@@ -71,7 +71,6 @@ const navMain = [
   },
 ];
 
-// Helper: Check if user has a given permission
 function hasPermission(user, permission) {
   if (!permission) return true;
   return user?.role?.permissions?.includes(permission);
@@ -82,15 +81,12 @@ export function AppSidebar(props) {
 
   const filteredNavMain = navMain
     .map((section) => {
-      // If section has no items, show it as-is (like "Settings")
       if (!section.items) return section;
 
-      // Filter items by permission
       const visibleItems = section.items.filter((item) =>
         hasPermission(user, item.permission)
       );
 
-      // If no items are visible, remove entire section
       if (visibleItems.length === 0) return null;
 
       return {
@@ -98,7 +94,7 @@ export function AppSidebar(props) {
         items: visibleItems,
       };
     })
-    .filter(Boolean); // Remove nulls
+    .filter(Boolean); 
 
   return (
     <Sidebar collapsible="icon" {...props} className="scrollbar-hide">

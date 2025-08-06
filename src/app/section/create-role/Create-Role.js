@@ -66,9 +66,9 @@ export default function CreateRoleForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 px-4">
+    <div className="max-w-4xl mx-auto mt-10 md:px-4">
       <Card>
-        <CardContent className="space-y-6 p-6">
+        <CardContent className="space-y-6 md:p-6">
           <h2 className="text-2xl font-bold dark:text-white">Create Role</h2>
 
           <RHFFormField

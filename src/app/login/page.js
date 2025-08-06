@@ -1,10 +1,9 @@
-import React from 'react'
-import LoginPage from '../section/login/Login'
+import LoginPage from "../section/login/login"
 
 const page = () => {
   return (
     <div>
-      <LoginPage />
+      <LoginPage/>
     </div>
   )
 }

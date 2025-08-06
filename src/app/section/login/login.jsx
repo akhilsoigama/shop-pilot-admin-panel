@@ -254,7 +254,7 @@ export default function LoginPage() {
                     className="text-sm h-auto px-0 text-primary hover:text-primary/80"
                     onClick={() => router.push('/register')}
                   >
-                    Request access
+                    Request access  
                   </Button>
                 </p>
               </div>

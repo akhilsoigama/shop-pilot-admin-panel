@@ -21,8 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AuthContext } from "@/context/authContext";
 
-
-// Define project links
+// Project Links (Always visible)
 const navProjects = [
   {
     name: "Overview",
@@ -31,103 +30,67 @@ const navProjects = [
   },
 ];
 
-// Define sidebar items with permissions
+// Sidebar Nav Items (Some require permissions)
 const navMain = [
   {
     title: "Products",
-    url: "#",
     icon: Bot,
     permissions: ["create-product", "read-product"],
     items: [
-      {
-        title: "Add Products",
-        url: "/dashboard/addProducts",
-        permission: "create-product",
-      },
-      {
-        title: "List",
-        url: "/dashboard/product",
-        permission: "read-product",
-      },
+      { title: "Add Products", url: "/dashboard/addProducts", permission: "create-product" },
+      { title: "List", url: "/dashboard/product", permission: "read-product" },
     ],
   },
   {
     title: "Roles",
-    url: "#",
     icon: ManageAccounts,
     permissions: ["create-role", "read-role"],
     items: [
-      {
-        title: "Create Role",
-        url: "/dashboard/createRole",
-        permission: "create-role",
-      },
-      {
-        title: "List",
-        url: "/dashboard/updateRole",
-        permission: "read-role",
-      },
+      { title: "Create Role", url: "/dashboard/createRole", permission: "create-role" },
+      { title: "List", url: "/dashboard/updateRole", permission: "read-role" },
     ],
   },
   {
     title: "User Management",
-    url: "#",
     icon: User,
     permissions: ["create-user", "read-user"],
     items: [
-      {
-        title: "Create User",
-        url: "/dashboard/createUser",
-        permission: "create-user",
-      },
-      {
-        title: "List",
-        url: "/dashboard/updateUser",
-        permission: "read-user",
-      },
+      { title: "Create User", url: "/dashboard/createUser", permission: "create-user" },
+      { title: "List", url: "/dashboard/updateUser", permission: "read-user" },
     ],
   },
   {
     title: "Settings",
-    url: "#",
     icon: Settings2,
     items: [
-      {
-        title: "General",
-        url: "#",
-      },
-      {
-        title: "Team",
-        url: "#",
-      },
-      {
-        title: "Billing",
-        url: "#",
-      },
-      {
-        title: "Limits",
-        url: "#",
-      },
+      { title: "General", url: "#" },
+      { title: "Team", url: "#" },
+      { title: "Billing", url: "#" },
+      { title: "Limits", url: "#" },
     ],
   },
 ];
 
-// Utility to check permission
+// Helper: Check if user has a given permission
 function hasPermission(user, permission) {
-  if (!permission) return true; // No permission required
+  if (!permission) return true;
   return user?.role?.permissions?.includes(permission);
 }
 
 export function AppSidebar(props) {
   const { user } = useContext(AuthContext);
 
-  // Filter navMain items based on user permissions
   const filteredNavMain = navMain
     .map((section) => {
-      const visibleItems = (section.items || []).filter((item) =>
+      // If section has no items, show it as-is (like "Settings")
+      if (!section.items) return section;
+
+      // Filter items by permission
+      const visibleItems = section.items.filter((item) =>
         hasPermission(user, item.permission)
       );
 
+      // If no items are visible, remove entire section
       if (visibleItems.length === 0) return null;
 
       return {

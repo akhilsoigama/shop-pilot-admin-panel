@@ -5,17 +5,19 @@ import { NextResponse } from 'next/server';
 
 export async function PUT(req, { params }) {
   await connectDB();
+  const {id}= await params
   const err = await requirePermission('update-user')(req);
   if (err) return err;
-  const { email, roleId } = await req.json();
-  const updated = await UserModel.findByIdAndUpdate(params.id, { email, role: roleId }, { new: true });
+  const { name, mobile, email, roleId } = await req.json();
+  const updated = await UserModel.findByIdAndUpdate(id, { name, mobile, email, role: roleId }, { new: true });
   return NextResponse.json(updated);
 }
 
 export async function DELETE(req, { params }) {
   await connectDB();
+  const {id} = await params;
   const err = await requirePermission('delete-user')(req);
   if (err) return err;
-  await UserModel.findByIdAndDelete(params.id);
+  await UserModel.findByIdAndDelete(id);
   return NextResponse.json({ success: true });
 }

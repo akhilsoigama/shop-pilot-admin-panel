@@ -134,7 +134,7 @@ export default function RoleListPage() {
     };
 
     return (
-        <motion.div className="mx-auto max-w-screen-2xl px-2 pt-5 sm:px-4 md:px-6">
+        <motion.div className="mx-auto max-w-screen-2xl  pt-5 sm:px-4 md:px-6">
             <Card className="shadow-md">
                 <CardContent>
                     <Typography variant="h5" className="mb-4">
@@ -246,7 +246,7 @@ export default function RoleListPage() {
 
                     {/* EDIT FORM */}
                     {editing && (
-                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className='mt-3'>
                             <Card className="mb-6">
                                 <CardContent>
                                     <Typography variant="h6" className="mb-3">

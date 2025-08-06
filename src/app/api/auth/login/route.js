@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/db";
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
 import { generateToken } from "@/lib/auth";
-import UserRole from "@/app/model/role"; 
 
 export async function POST(req) {
   try {

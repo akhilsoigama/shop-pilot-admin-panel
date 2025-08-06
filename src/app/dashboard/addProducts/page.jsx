@@ -1,4 +1,4 @@
-import AddProductsNewEditForm from '@/app/section/add-products/add-product-new-edit-form'
+import { AddProductsNewEditForm } from "@/app/section/add-products/add-product-new-edit-form"
 
 const page = () => {
   return (

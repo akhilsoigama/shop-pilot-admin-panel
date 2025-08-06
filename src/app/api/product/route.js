@@ -20,14 +20,6 @@ function getCorsHeaders(origin) {
   };
 }
 
-export function OPTIONS(req) {
-  const origin = req.headers.get("origin");
-  const corsHeaders = getCorsHeaders(origin);
-  return NextResponse.json({}, { status: 200, headers: corsHeaders });
-}
-
-export const dynamic = "force-dynamic";
-
 export async function GET(req) {
   await connectDB();
   const error = await requirePermission("read-product")(req);
@@ -39,6 +31,7 @@ export async function GET(req) {
   const { searchParams } = new URL(req.url);
   const category = searchParams.get("category");
   const subcategory = searchParams.get("subcategory");
+  const specification = searchParams.get("specification");
 
   const filter = {};
 
@@ -48,6 +41,11 @@ export async function GET(req) {
 
   if (subcategory) {
     filter.subCategory = { $regex: new RegExp(`^${subcategory}$`, "i") };
+  }
+
+  if (specification) {
+    const [name, value] = specification.split(':');
+    filter[`specifications.${name}`] = value;
   }
 
   try {
@@ -70,6 +68,7 @@ export async function POST(req) {
     await connectDB();
     const error = await requirePermission("create-product")(req);
     if (error) return error;
+
     const {
       productName,
       brand,
@@ -82,6 +81,7 @@ export async function POST(req) {
       productImage,
       productDescription,
       quantity,
+      specifications = []
     } = await req.json();
 
     const slugify = (str) =>
@@ -101,14 +101,20 @@ export async function POST(req) {
         ? actualPrice - (actualPrice * discountPercent) / 100
         : actualPrice;
 
+    const stripeMetadata = {
+      category,
+      subCategory: subCategory || "",
+      productKey: generatedProductKey,
+      ...specifications.reduce((acc, spec) => {
+        acc[`spec_${spec.name}`] = spec.value;
+        return acc;
+      }, {})
+    };
+
     const stripeProduct = await stripe.products.create({
       name: productName,
       images: productImage?.length > 0 ? [productImage[0]] : [],
-      metadata: {
-        category,
-        subCategory: subCategory || "",
-        productKey: generatedProductKey,
-      },
+      metadata: stripeMetadata,
     });
 
     const stripePrice = await stripe.prices.create({
@@ -130,6 +136,7 @@ export async function POST(req) {
       productImage,
       quantity,
       productDescription,
+      specifications,
       stripeProductId: stripeProduct.id,
       stripePriceId: stripePrice.id,
     });

@@ -1,5 +1,5 @@
 "use client"
-import AddProductsNewEditForm from '@/app/section/add-products/add-product-new-edit-form'
+import { AddProductsNewEditForm } from '@/app/section/add-products/add-product-new-edit-form'
 import { useProducts } from '@/hooks/useProducts'
 import React, { use } from 'react'
 

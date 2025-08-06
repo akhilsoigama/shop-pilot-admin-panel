@@ -8,17 +8,28 @@ const fetcher = (url) => axios.get(url).then(res => res.data);
 export function useProducts() {
   const { data, error, isLoading, isValidating } = useSWR(API_BASE, fetcher, {
     revalidateOnFocus: false,
-    refreshInterval: 30000, 
+    refreshInterval: 30000,
     shouldRetryOnError: true,
     errorRetryInterval: 5000,
   });
 
   const createProduct = async (productData) => {
     try {
-      const optimisticData = data ? [...data, { ...productData, _id: 'temp' }] : [{ ...productData, _id: 'temp' }];
+      const optimisticData = data 
+        ? [...data, { ...productData, _id: 'temp' }] 
+        : [{ ...productData, _id: 'temp' }];
+      
       mutate(API_BASE, optimisticData, false);
 
-      const response = await axios.post(API_BASE, productData);
+      const response = await axios.post(API_BASE, {
+        ...productData,
+        specifications: productData.specifications?.map(spec => ({
+          name: spec.name,
+          value: spec.value,
+          type: spec.type
+        })) || []
+      });
+      
       mutate(API_BASE);
       return response.data;
     } catch (err) {
@@ -28,11 +39,15 @@ export function useProducts() {
   };
 
   const getProduct = (id) => {
-    const { data, error } = useSWR(id ? `${API_BASE}/${id}` : null, fetcher);
+    const { data: productData, error: productError } = useSWR(
+      id ? `${API_BASE}/${id}` : null, 
+      fetcher
+    );
+    
     return {
-      product: data,
-      isLoading: !error && !data,
-      isError: error
+      product: productData,
+      isLoading: !productError && !productData,
+      isError: productError
     };
   };
 
@@ -43,8 +58,16 @@ export function useProducts() {
       );
       mutate(API_BASE, optimisticData, false);
 
-      const response = await axios.put(`${API_BASE}/${id}`, productData);
-      mutate(API_BASE); 
+      const response = await axios.put(`${API_BASE}/${id}`, {
+        ...productData,
+        specifications: productData.specifications?.map(spec => ({
+          name: spec.name,
+          value: spec.value,
+          type: spec.type
+        })) || []
+      });
+      
+      mutate(API_BASE);
       return response.data;
     } catch (err) {
       mutate(API_BASE);
@@ -58,7 +81,7 @@ export function useProducts() {
       mutate(API_BASE, optimisticData, false);
 
       await axios.delete(`${API_BASE}/${id}`);
-      mutate(API_BASE); 
+      mutate(API_BASE);
     } catch (err) {
       mutate(API_BASE);
       throw err;

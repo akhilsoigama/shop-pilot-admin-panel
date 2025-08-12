@@ -4,21 +4,14 @@ import { requirePermission } from "@/lib/requirePermission";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-08-16",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-08-16" });
 
 export async function GET(req, { params }) {
   try {
     await connectDB();
-
     const { id } = await params;
-
     const product = await Product.findById(id);
-    if (!product) {
-      return NextResponse.json({ message: "Product not found" }, { status: 404 });
-    }
-
+    if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
     return NextResponse.json(product, { status: 200 });
   } catch (error) {
     console.error("Error in GET /product/[id]", error);
@@ -32,7 +25,9 @@ export async function PUT(req, { params }) {
     const error = await requirePermission("update-product")(req);
     if (error) return error;
 
-    const id = await params.id;
+    const { id } = await params;
+    const body = await req.json();
+
     const {
       productName,
       category,
@@ -44,13 +39,12 @@ export async function PUT(req, { params }) {
       inStock,
       productImage,
       productDescription,
-      specifications = []
-    } = await req.json();
+      specifications = [],
+      variants = []
+    } = body;
 
     const product = await Product.findById(id);
-    if (!product) {
-      return NextResponse.json({ message: "Product not found" }, { status: 404 });
-    }
+    if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
 
     if (product.stripePriceId) {
       try {
@@ -60,11 +54,24 @@ export async function PUT(req, { params }) {
       }
     }
 
-    const newStripePrice = await stripe.prices.create({
-      unit_amount: Math.round((discountPrice || price) * 100),
-      currency: "inr",
-      product: product.stripeProductId,
-    });
+    // Process variants with stock information
+    const variantsWithStripe = await Promise.all(
+      (variants || []).map(async (v) => {
+        if (v.stripePriceId) return v;
+        const vPrice = Number(v.price) || discountPrice || price;
+        const newPrice = await stripe.prices.create({
+          unit_amount: Math.round((vPrice || price) * 100),
+          currency: "inr",
+          product: product.stripeProductId,
+        });
+        return {
+          ...v,
+          discountPrice: v.discount ? vPrice - (vPrice * Number(v.discount || 0)) / 100 : vPrice,
+          stripePriceId: newPrice.id,
+          inStock: (v.availableStock || 0) > 0
+        };
+      })
+    );
 
     const stripeMetadata = {
       category,
@@ -99,17 +106,13 @@ export async function PUT(req, { params }) {
     product.productImage = productImage;
     product.productDescription = productDescription;
     product.specifications = specifications;
-    product.stripePriceId = newStripePrice.id;
+    product.variants = variantsWithStripe;
 
     const updatedProduct = await product.save();
-
     return NextResponse.json(updatedProduct, { status: 200 });
   } catch (error) {
     console.error("Error in update product", error);
-    return NextResponse.json(
-      { message: "Failed to update product", error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to update product", error: error.message }, { status: 500 });
   }
 }
 
@@ -120,11 +123,8 @@ export async function DELETE(req, { params }) {
     if (error) return error;
 
     const { id } = await params;
-
     const product = await Product.findById(id);
-    if (!product) {
-      return NextResponse.json({ message: "Product not found" }, { status: 404 });
-    }
+    if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
 
     if (product.stripeProductId) {
       try {
@@ -135,13 +135,9 @@ export async function DELETE(req, { params }) {
     }
 
     await Product.findByIdAndDelete(id);
-
     return NextResponse.json({ message: "Deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error("Error in DELETE /product/[id]", error);
-    return NextResponse.json(
-      { message: "Failed to delete", error: error.message },
-      { status: 500 }
-    );
+    return NextResponse.json({ message: "Failed to delete", error: error.message }, { status: 500 });
   }
 }

@@ -35,7 +35,7 @@ const navMain = [
   {
     title: "Products",
     icon: Bot,
-    permissions: ["create-product", "read-product"],
+    permissions: ["create-product"],
     items: [
       { title: "Add Products", url: "/dashboard/addProducts", permission: "create-product" },
       { title: "List", url: "/dashboard/product", permission: "read-product" },

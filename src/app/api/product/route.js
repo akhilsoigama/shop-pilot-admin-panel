@@ -14,26 +14,46 @@ function getCorsHeaders(origin) {
     "Access-Control-Allow-Headers": "Content-Type",
   };
 }
-
-export async function GET(req) {
-  await connectDB();
+export async function OPTIONS(req) {
   const origin = req.headers.get("origin");
   const corsHeaders = getCorsHeaders(origin);
 
-  const { searchParams } = new URL(req.url);
-  const category = searchParams.get("category");
-  const subcategory = searchParams.get("subcategory");
-  const specification = searchParams.get("specification");
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
 
-  const filter = {};
-  if (category) filter.category = { $regex: new RegExp(`^${category}$`, "i") };
-  if (subcategory) filter.subCategory = { $regex: new RegExp(`^${subcategory}$`, "i") };
-  if (specification) {
-    const [name, value] = specification.split(':');
-    filter['specifications'] = { $elemMatch: { name, value } };
-  }
+export async function GET(req) {
+  await connectDB();
+  
+  // const error = await requirePermission("read-product")(req);
+  // if (error) return error;
+
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
 
   try {
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get("category");
+    const subcategory = searchParams.get("subcategory");
+    const specification = searchParams.get("specification");
+
+    const filter = {};
+
+    if (category) {
+      filter.category = { $regex: new RegExp(`^${category}$`, "i") };
+    }
+
+    if (subcategory) {
+      filter.subCategory = { $regex: new RegExp(`^${subcategory}$`, "i") };
+    }
+
+    if (specification) {
+      const [name, value] = specification.split(":");
+      filter[`specifications.${name}`] = value;
+    }
+
     const products = await Product.find(filter);
     return NextResponse.json(products, { status: 200, headers: corsHeaders });
   } catch (err) {
@@ -41,7 +61,6 @@ export async function GET(req) {
     return NextResponse.json({ message: "Error fetching products" }, { status: 500, headers: corsHeaders });
   }
 }
-
 export async function POST(req) {
   const origin = req.headers.get("origin");
   const corsHeaders = getCorsHeaders(origin);

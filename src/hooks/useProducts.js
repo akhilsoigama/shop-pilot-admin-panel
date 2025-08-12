@@ -15,10 +15,7 @@ export function useProducts() {
 
   const createProduct = async (productData) => {
     try {
-      const optimisticData = data 
-        ? [...data, { ...productData, _id: 'temp' }] 
-        : [{ ...productData, _id: 'temp' }];
-      
+      const optimisticData = data ? [...data, { ...productData, _id: 'temp' }] : [{ ...productData, _id: 'temp' }];
       mutate(API_BASE, optimisticData, false);
 
       const response = await axios.post(API_BASE, {
@@ -27,9 +24,13 @@ export function useProducts() {
           name: spec.name,
           value: spec.value,
           type: spec.type
+        })) || [],
+        variants: productData.variants?.map(variant => ({
+          ...variant,
+          inStock: (variant.availableStock || 0) > 0
         })) || []
       });
-      
+
       mutate(API_BASE);
       return response.data;
     } catch (err) {
@@ -39,11 +40,7 @@ export function useProducts() {
   };
 
   const getProduct = (id) => {
-    const { data: productData, error: productError } = useSWR(
-      id ? `${API_BASE}/${id}` : null, 
-      fetcher
-    );
-    
+    const { data: productData, error: productError } = useSWR(id ? `${API_BASE}/${id}` : null, fetcher);
     return {
       product: productData,
       isLoading: !productError && !productData,
@@ -53,9 +50,7 @@ export function useProducts() {
 
   const updateProduct = async (id, productData) => {
     try {
-      const optimisticData = data?.map(product => 
-        product._id === id ? { ...product, ...productData } : product
-      );
+      const optimisticData = data?.map(product => product._id === id ? { ...product, ...productData } : product);
       mutate(API_BASE, optimisticData, false);
 
       const response = await axios.put(`${API_BASE}/${id}`, {
@@ -64,9 +59,13 @@ export function useProducts() {
           name: spec.name,
           value: spec.value,
           type: spec.type
+        })) || [],
+        variants: productData.variants?.map(variant => ({
+          ...variant,
+          inStock: (variant.availableStock || 0) > 0
         })) || []
       });
-      
+
       mutate(API_BASE);
       return response.data;
     } catch (err) {

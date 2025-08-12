@@ -4,15 +4,10 @@ import { requirePermission } from "@/lib/requirePermission";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2023-08-16",
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-08-16" });
 
 function getCorsHeaders(origin) {
-  const allowedOrigins = [
-    "http://localhost:3000",
-    "https://shop-pilot-xi.vercel.app",
-  ];
+  const allowedOrigins = ["http://localhost:3000", "https://shop-pilot-xi.vercel.app"];
   return {
     "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "",
     "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
@@ -22,9 +17,6 @@ function getCorsHeaders(origin) {
 
 export async function GET(req) {
   await connectDB();
-  const error = await requirePermission("read-product")(req);
-  if (error) return error;
-
   const origin = req.headers.get("origin");
   const corsHeaders = getCorsHeaders(origin);
 
@@ -34,18 +26,11 @@ export async function GET(req) {
   const specification = searchParams.get("specification");
 
   const filter = {};
-
-  if (category) {
-    filter.category = { $regex: new RegExp(`^${category}$`, "i") };
-  }
-
-  if (subcategory) {
-    filter.subCategory = { $regex: new RegExp(`^${subcategory}$`, "i") };
-  }
-
+  if (category) filter.category = { $regex: new RegExp(`^${category}$`, "i") };
+  if (subcategory) filter.subCategory = { $regex: new RegExp(`^${subcategory}$`, "i") };
   if (specification) {
     const [name, value] = specification.split(':');
-    filter[`specifications.${name}`] = value;
+    filter['specifications'] = { $elemMatch: { name, value } };
   }
 
   try {
@@ -53,10 +38,7 @@ export async function GET(req) {
     return NextResponse.json(products, { status: 200, headers: corsHeaders });
   } catch (err) {
     console.error("Error fetching products:", err);
-    return NextResponse.json(
-      { message: "Error fetching products" },
-      { status: 500, headers: corsHeaders }
-    );
+    return NextResponse.json({ message: "Error fetching products" }, { status: 500, headers: corsHeaders });
   }
 }
 
@@ -68,6 +50,8 @@ export async function POST(req) {
     await connectDB();
     const error = await requirePermission("create-product")(req);
     if (error) return error;
+
+    const body = await req.json();
 
     const {
       productName,
@@ -81,26 +65,21 @@ export async function POST(req) {
       productImage,
       productDescription,
       quantity,
-      specifications = []
-    } = await req.json();
+      specifications = [],
+      variants = []
+    } = body;
 
     const slugify = (str) =>
-      str
-        .toLowerCase()
-        .replace(/[^\w\s]/gi, "")
-        .trim()
-        .replace(/\s+/g, "-");
+      str.toLowerCase().replace(/[^\w\s]/gi, "").trim().replace(/\s+/g, "-");
 
-    const generatedProductKey =
-      productKey || `${slugify(productName)}-${Date.now()}`;
+    const generatedProductKey = productKey || `${slugify(productName)}-${Date.now()}`;
 
     const actualPrice = Number(price);
     const discountPercent = Number(discount) || 0;
     const discountPrice =
-      discountPercent > 0
-        ? actualPrice - (actualPrice * discountPercent) / 100
-        : actualPrice;
+      discountPercent > 0 ? actualPrice - (actualPrice * discountPercent) / 100 : actualPrice;
 
+    // Create Stripe product
     const stripeMetadata = {
       category,
       subCategory: subCategory || "",
@@ -117,11 +96,35 @@ export async function POST(req) {
       metadata: stripeMetadata,
     });
 
-    const stripePrice = await stripe.prices.create({
-      unit_amount: Math.round(discountPrice * 100),
-      currency: "inr",
-      product: stripeProduct.id,
-    });
+    // Process variants with stock information
+    const variantsWithStripe = await Promise.all(
+      (variants || []).map(async (v) => {
+        const vPrice = Number(v.price) || discountPrice || actualPrice;
+        const newPrice = await stripe.prices.create({
+          unit_amount: Math.round((vPrice || actualPrice) * 100),
+          currency: "inr",
+          product: stripeProduct.id,
+        });
+        return {
+          ...v,
+          discountPrice: v.discount
+            ? vPrice - (vPrice * Number(v.discount || 0)) / 100
+            : vPrice,
+          stripePriceId: newPrice.id,
+          inStock: (v.availableStock || 0) > 0
+        };
+      })
+    );
+
+    let topStripePriceId = null;
+    if (!variants || variants.length === 0) {
+      const topPrice = await stripe.prices.create({
+        unit_amount: Math.round(discountPrice * 100),
+        currency: "inr",
+        product: stripeProduct.id,
+      });
+      topStripePriceId = topPrice.id;
+    }
 
     const product = new Product({
       productName,
@@ -137,18 +140,15 @@ export async function POST(req) {
       quantity,
       productDescription,
       specifications,
+      variants: variantsWithStripe,
       stripeProductId: stripeProduct.id,
-      stripePriceId: stripePrice.id,
+      stripePriceId: topStripePriceId,
     });
 
     await product.save();
-
     return NextResponse.json(product, { status: 201, headers: corsHeaders });
   } catch (error) {
     console.error("Error in add product", error);
-    return NextResponse.json(
-      { message: "Failed to add product", error: error.message },
-      { status: 400, headers: corsHeaders }
-    );
+    return NextResponse.json({ message: "Failed to add product", error: error.message }, { status: 400, headers: corsHeaders });
   }
 }

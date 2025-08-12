@@ -6,6 +6,18 @@ const specificationSchema = new mongoose.Schema({
   type: { type: String, enum: ['text', 'number', 'dropdown'], required: true }
 });
 
+const variantSchema = new mongoose.Schema({
+  specifications: [specificationSchema],
+  price: { type: Number, required: true },
+  discount: { type: Number, default: 0 },
+  discountPrice: { type: Number },
+  quantity: { type: Number, default: 1 },
+  availableStock: { type: Number, default: 0 },
+  inStock: { type: Boolean, default: true },
+  sku: { type: String },
+  stripePriceId: { type: String }
+}, { _id: false });
+
 const ProductSchema = new mongoose.Schema({
   productName: { type: String, required: true },
   brand: { type: String, required: true },
@@ -27,6 +39,7 @@ const ProductSchema = new mongoose.Schema({
   productDescription: { type: String, required: true },
   quantity: { type: Number, default: 1 },
   specifications: [specificationSchema],
+  variants: [variantSchema],
   stripeProductId: { type: String },
   stripePriceId: { type: String },
 }, { timestamps: true });

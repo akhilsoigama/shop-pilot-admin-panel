@@ -17,6 +17,7 @@ import { useRouter } from 'next/navigation';
 import RHFCheckboxField from '@/app/components/controllers/RHFCheckboxField';
 import { categories, getFieldsForSubcategory, Subcategories, getVariantAttributesForSubcategory } from '@/lib/category';
 import RHFVariantField from '@/app/components/controllers/RHFVariantField';
+import { Button } from '@/components/ui/button';
 
 const productSchema = z.object({
   productName: z.string().min(3, 'Name must be at least 3 characters'),
@@ -82,6 +83,8 @@ const generateVariantCombinations = (attributes, basePrice = 0) => {
     };
   });
 };
+
+const MotionButton = motion(Button);
 
 export const AddProductsNewEditForm = ({ productData }) => {
   const { createProduct, updateProduct } = useProducts();
@@ -633,24 +636,28 @@ export const AddProductsNewEditForm = ({ productData }) => {
                 </div>
               ))}
 
-              <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 dark:border-neutral-700">
+              <div className="flex justify-between items-center mt-8 pt-4 border-t border-gray-200 dark:border-border">
                 <div>
-                  <button
+                  <MotionButton
                     type="button"
                     onClick={generateVariants}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="gap-2"
+                    variant="default"
                   >
-                    <FiPlus size={18} /> Generate Variants
-                  </button>
+                    <FiPlus className="h-4 w-4" />
+                    Generate Variants
+                  </MotionButton>
                 </div>
 
-                <div className="text-sm text-gray-500 dark:text-gray-400">
-                  {variants.length > 0 && (
+                {variants.length > 0 && (
+                  <div className="text-sm text-muted-foreground">
                     <span>
                       {variants.length} variant{variants.length > 1 ? 's' : ''} generated
                     </span>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>
@@ -821,36 +828,53 @@ export const AddProductsNewEditForm = ({ productData }) => {
         </section>
 
         {/* Actions */}
-        <div className="flex justify-end flex-wrap gap-4 mt-6">
+        <div className="flex justify-end flex-wrap gap-4 mt-1">
           {isEditMode && (
-            <motion.button
+            <MotionButton
               type="button"
               onClick={handleCancel}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="px-6 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-gray-200 rounded-md font-medium shadow-sm"
+              whileHover={!isSubmitting ? {
+                scale: 1.03,
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+              } : {}}
+              whileTap={!isSubmitting ? {
+                scale: 0.98
+              } : {}}
+              className="gap-2 px-6 font-medium transition-all"
+              variant={isEditMode ? "secondary" : "default"}
             >
               Cancel
-            </motion.button>
+            </MotionButton>
           )}
-          <motion.button
+          <MotionButton
             type="submit"
             disabled={isSubmitting}
-            whileHover={!isSubmitting ? { scale: 1.05 } : {}}
-            whileTap={!isSubmitting ? { scale: 0.95 } : {}}
-            className={`px-6 py-2 rounded-md font-medium shadow-sm flex items-center gap-2 
-            ${isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'} 
-            text-white dark:bg-blue-500 dark:hover:bg-blue-600`}
+            whileHover={!isSubmitting ? {
+              scale: 1.03,
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
+            } : {}}
+            whileTap={!isSubmitting ? {
+              scale: 0.98
+            } : {}}
+            className="gap-2 px-6 font-medium transition-all"
+            variant={isEditMode ? "secondary" : "default"}
           >
             {isSubmitting ? (
-              <IoReloadOutline size={20} className='text-white animate-spin' />
+              <>
+                <IoReloadOutline className="h-5 w-5 animate-spin" />
+                {isEditMode ? "Updating..." : "Adding..."}
+              </>
             ) : (
               <>
-                {isEditMode ? <UpdateIcon /> : <FiPlus />}
-                {isEditMode ? 'Update Product' : 'Add Product'}
+                {isEditMode ? (
+                  <UpdateIcon className="h-5 w-5" />
+                ) : (
+                  <FiPlus className="h-5 w-5" />
+                )}
+                {isEditMode ? "Update Product" : "Add Product"}
               </>
             )}
-          </motion.button>
+          </MotionButton>
         </div>
       </form>
     </motion.div>

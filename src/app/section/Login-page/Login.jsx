@@ -19,7 +19,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-     
+
   const {
     form: { control, handleSubmit, formState: { errors } },
     showPassword,
@@ -46,30 +46,80 @@ export default function LoginPage() {
       </div>
 
       {/* Main container */}
-      <motion.div 
+      <motion.div
         className="w-full max-w-6xl flex flex-col lg:flex-row rounded-xl overflow-hidden shadow-2xl bg-background"
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
         {/* Left side - Branding */}
-        <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary to-primary/90 p-12 relative overflow-hidden">
-          {/* Decorative elements */}
-          <div className="absolute inset-0 opacity-10">
-            <div className="absolute top-0 left-0 w-32 h-32 rounded-full bg-white mix-blend-overlay"></div>
-            <div className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-white mix-blend-overlay"></div>
+        <div className="hidden lg:flex flex-1 relative overflow-hidden">
+          {/* Gradient background with dark mode support */}
+          <div className="absolute inset-0 bg-gradient-to-br from-primary to-primary/90 dark:from-primary/90 dark:to-primary/70" />
+
+          {/* Animated floating circles - enhanced for dark mode */}
+          <div className="absolute inset-0 opacity-10 dark:opacity-15">
+            <motion.div
+              className="absolute top-0 left-0 w-32 h-32 rounded-full bg-white mix-blend-overlay dark:mix-blend-lighten"
+              animate={{
+                x: [-10, 10, -10],
+                y: [0, 15, 0],
+                scale: [1, 1.05, 1]
+              }}
+              transition={{
+                duration: 12,
+                repeat: Infinity,
+                ease: "easeInOut"
+              }}
+            />
+            <motion.div
+              className="absolute bottom-0 right-0 w-64 h-64 rounded-full bg-white mix-blend-overlay dark:mix-blend-lighten"
+              animate={{
+                x: [10, -10, 10],
+                y: [0, -20, 0],
+                scale: [1, 1.1, 1]
+              }}
+              transition={{
+                duration: 15,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 3
+              }}
+            />
+            {/* New medium circle */}
+            <motion.div
+              className="absolute top-1/3 right-1/4 w-48 h-48 rounded-full bg-white/80 mix-blend-overlay dark:mix-blend-lighten"
+              animate={{
+                x: [0, 15, 0],
+                y: [0, -10, 0],
+                scale: [1, 1.08, 1]
+              }}
+              transition={{
+                duration: 18,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: 6
+              }}
+            />
           </div>
-          
+
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-radial-gradient from-white/5 to-transparent dark:from-primary/20 pointer-events-none" />
+
           {/* Content */}
-          <div className="relative z-10 flex flex-col justify-between h-full text-primary-foreground">
+          <div className="relative z-10 flex flex-col justify-between h-full text-primary-foreground p-8 lg:p-12">
             <div>
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
                 className="flex items-center gap-3 mb-8"
               >
-                <div className="bg-background/20 p-2 rounded-lg backdrop-blur-sm border border-background/10">
+                <motion.div
+                  className="bg-background/20 p-2 rounded-lg backdrop-blur-sm border border-background/10 dark:border-background/20"
+                  whileHover={{ rotate: 5, scale: 1.05 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
                   <Image
                     src="/logo.png"
                     alt="Company Logo"
@@ -78,47 +128,110 @@ export default function LoginPage() {
                     className="rounded-lg"
                     priority
                   />
-                </div>
-                <span className="text-xl font-bold tracking-tight">YourBrand</span>
+                </motion.div>
+                <motion.span
+                  className="text-xl font-bold tracking-tight"
+                  whileHover={{ scale: 1.02 }}
+                  transition={{ type: "spring", stiffness: 400 }}
+                >
+                  YourBrand
+                </motion.span>
               </motion.div>
-              
+
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
+                transition={{ delay: 0.4, type: "spring" }}
               >
-                <h2 className="text-4xl font-bold mb-4 tracking-tight">Welcome back!</h2>
-                <p className="text-primary-foreground/80 mb-8">
+                <motion.h2
+                  className="text-4xl font-bold mb-4 tracking-tight"
+                  whileHover={{ x: 5 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  Welcome back!
+                </motion.h2>
+                <motion.p
+                  className="text-primary-foreground/80 mb-8 dark:text-primary-foreground/90"
+                  whileHover={{ x: 2 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
                   Streamline your workflow with our powerful admin dashboard.
-                </p>
+                </motion.p>
               </motion.div>
             </div>
 
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="flex items-center gap-4 bg-background/10 p-4 rounded-lg backdrop-blur-sm border border-background/10"
+              whileHover={{ y: -5 }}
+              className="flex items-center gap-4 bg-background/10 p-4 rounded-lg backdrop-blur-sm border border-background/10 dark:border-background/20 dark:bg-background/15"
             >
               <div className="flex -space-x-2">
                 {[1, 2, 3].map((i) => (
-                  <Avatar key={i} className="h-10 w-10 border-2 border-background">
-                    <AvatarFallback className="bg-primary/80 text-primary-foreground">
-                      U{i}
-                    </AvatarFallback>
-                  </Avatar>
+                  <motion.div
+                    key={i}
+                    whileHover={{ y: -5, scale: 1.1 }}
+                    transition={{ type: "spring", stiffness: 400 }}
+                  >
+                    <Avatar className="h-10 w-10 border-2 border-background dark:border-background/50">
+                      <AvatarFallback className="bg-primary/80 text-primary-foreground dark:bg-primary/70">
+                        U{i}
+                      </AvatarFallback>
+                    </Avatar>
+                  </motion.div>
                 ))}
               </div>
               <div>
-                <p className="text-sm font-medium">Join 10,000+ admins</p>
-                <p className="text-xs text-primary-foreground/70">Trusted by top companies</p>
+                <motion.p
+                  className="text-sm font-medium"
+                  whileHover={{ x: 2 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  Join 10,000+ admins
+                </motion.p>
+                <motion.p
+                  className="text-xs text-primary-foreground/70 dark:text-primary-foreground/80"
+                  whileHover={{ x: 2 }}
+                  transition={{ type: "spring", stiffness: 300 }}
+                >
+                  Trusted by top companies
+                </motion.p>
               </div>
             </motion.div>
+          </div>
+
+          {/* Subtle particles animation */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {[...Array(12)].map((_, i) => (
+              <motion.div
+                key={i}
+                className="absolute rounded-full bg-white/10 dark:bg-primary-foreground/10"
+                style={{
+                  width: Math.random() * 8 + 4 + 'px',
+                  height: Math.random() * 8 + 4 + 'px',
+                  left: `${Math.random() * 100}%`,
+                  top: `${Math.random() * 100}%`,
+                }}
+                animate={{
+                  y: [0, (Math.random() - 0.5) * 40],
+                  x: [0, (Math.random() - 0.5) * 30],
+                  opacity: [0.4, 0.8, 0.4],
+                }}
+                transition={{
+                  duration: Math.random() * 10 + 10,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                  ease: "easeInOut",
+                  delay: Math.random() * 5,
+                }}
+              />
+            ))}
           </div>
         </div>
 
         {/* Right side - Login Form */}
-        <motion.div 
+        <motion.div
           className="flex-1 bg-background/95 backdrop-blur-sm p-8 lg:p-12"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
@@ -162,7 +275,7 @@ export default function LoginPage() {
                     placeholder="admin@example.com"
                     error={errors.email}
                     startIcon={<Mail className="h-4 w-4 text-muted-foreground" />}
-                    className="pl-10"
+                    className="md:pl-10"
                   />
                 </div>
 
@@ -188,30 +301,30 @@ export default function LoginPage() {
                         )}
                       </button>
                     }
-                    className="pl-10"
+                    className="md:pl-10"
                   />
                 </div>
 
-                <div className=" pl-10 flex items-center justify-between">
+                <div className=" md:pl-10 flex md:items-center flex-col md:flex-row justify-between">
                   <div className="flex items-center space-x-2">
                     <Checkbox id="remember" />
                     <Label htmlFor="remember" className="text-sm font-medium leading-none">
                       Remember me
                     </Label>
                   </div>
-                  <Button
+                  {/* <Button
                     type="button"
                     variant="link"
                     className="text-sm h-auto px-0 text-muted-foreground hover:text-primary"
                   >
                     Forgot password?
-                  </Button>
+                  </Button> */}
                 </div>
 
                 <Button
                   type="submit"
                   size="lg"
-                  className="ml-10 mt-2"
+                  className="md:ml-10 mt-2"
                   disabled={isSubmitting}
                   onMouseEnter={() => setIsHovered(true)}
                   onMouseLeave={() => setIsHovered(false)}
@@ -254,7 +367,7 @@ export default function LoginPage() {
                     className="text-sm h-auto px-0 text-primary hover:text-primary/80"
                     onClick={() => router.push('/register')}
                   >
-                    Request access  
+                    Request access
                   </Button>
                 </p>
               </div>

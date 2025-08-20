@@ -6,16 +6,48 @@ import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2023-08-16" });
 
+function getCorsHeaders(origin) {
+  const allowedOrigins = ["http://localhost:3000", "https://shop-pilot-xi.vercel.app"];
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.includes(origin) ? origin : "",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  };
+}
+
+export async function OPTIONS(req) {
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
+  return new Response(null, {
+    status: 204,
+    headers: corsHeaders,
+  });
+}
+
 export async function GET(req, { params }) {
+  await connectDB();
+  const origin = req.headers.get("origin");
+  const corsHeaders = getCorsHeaders(origin);
+
   try {
-    await connectDB();
     const { id } = await params;
+
     const product = await Product.findById(id);
-    if (!product) return NextResponse.json({ message: "Product not found" }, { status: 404 });
-    return NextResponse.json(product, { status: 200 });
+    if (!product) {
+      return NextResponse.json(
+        { message: "Product not found" },
+        { status: 404, headers: corsHeaders }
+      );
+    }
+
+    return NextResponse.json(product, { status: 200, headers: corsHeaders });
   } catch (error) {
     console.error("Error in GET /product/[id]", error);
-    return NextResponse.json({ message: "Failed to get product" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Failed to get product", error: error.message },
+      { status: 500, headers: corsHeaders }
+    );
   }
 }
 

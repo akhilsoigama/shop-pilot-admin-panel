@@ -29,6 +29,7 @@ export const Subcategories = [
                     { name: 'Storage', type: 'dropdown', options: ['64GB', '128GB', '256GB', '512GB', '1TB'] },
                     { name: 'Screen Size', type: 'text', unit: 'inches' },
                     { name: 'Battery', type: 'text', unit: 'mAh' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Camera', type: 'text' },
                     { name: 'Processor', type: 'text' },
                     { name: 'Operating System', type: 'text' },
@@ -48,6 +49,7 @@ export const Subcategories = [
                     { name: 'Storage Type', type: 'dropdown', options: ['HDD', 'SSD', 'Hybrid'] },
                     { name: 'Storage Capacity', type: 'dropdown', options: ['256GB', '512GB', '1TB', '2TB'] },
                     { name: 'Screen Size', type: 'text', unit: 'inches' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Graphics Card', type: 'text' },
                     { name: 'Operating System', type: 'text' },
                 ],
@@ -65,6 +67,7 @@ export const Subcategories = [
                     { name: 'Storage', type: 'dropdown', options: ['32GB', '64GB', '128GB', '256GB'] },
                     { name: 'RAM', type: 'dropdown', options: ['2GB', '4GB', '6GB', '8GB'] },
                     { name: 'Battery', type: 'text', unit: 'mAh' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Camera', type: 'text' },
                     { name: 'SIM Support', type: 'dropdown', options: ['Yes', 'No'] },
                 ],
@@ -79,6 +82,7 @@ export const Subcategories = [
                 name: 'Headphones',
                 fields: [
                     { name: 'Type', type: 'dropdown', options: ['In-Ear', 'On-Ear', 'Over-Ear'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Connectivity', type: 'dropdown', options: ['Wired', 'Wireless', 'Bluetooth'] },
                     { name: 'Noise Cancellation', type: 'dropdown', options: ['Yes', 'No'] },
                     { name: 'Battery Life', type: 'text', unit: 'hours' },
@@ -93,11 +97,13 @@ export const Subcategories = [
                 fields: [
                     { name: 'Type', type: 'dropdown', options: ['DSLR', 'Mirrorless', 'Point & Shoot', 'Action Camera'] },
                     { name: 'Resolution', type: 'text', unit: 'MP' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Lens Included', type: 'dropdown', options: ['Yes', 'No'] },
                     { name: 'Zoom', type: 'text', unit: 'x' },
                     { name: 'Sensor Type', type: 'text' },
                 ],
                 variantAttributes: [
+                    { name: 'Color', description: 'Available color options' },
                     { name: 'Lens Kit', description: 'Body only or with lens options' },
                     { name: 'Color', description: 'Available color variants' }
                 ]
@@ -106,10 +112,12 @@ export const Subcategories = [
                 name: 'Gaming Consoles',
                 fields: [
                     { name: 'Model', type: 'text' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Storage', type: 'dropdown', options: ['500GB', '1TB', '2TB'] },
                     { name: 'Controller Included', type: 'dropdown', options: ['1', '2'] },
                 ],
                 variantAttributes: [
+                    { name: 'Color', description: 'Available color options' },
                     { name: 'Storage', description: 'Available storage capacities' },
                     { name: 'Edition', description: 'Special edition variants' }
                 ]
@@ -118,30 +126,22 @@ export const Subcategories = [
                 name: 'Televisions',
                 fields: [
                     { name: 'Screen Size', type: 'text', unit: 'inches' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Display Type', type: 'dropdown', options: ['LED', 'OLED', 'QLED', 'LCD'] },
                     { name: 'Smart TV', type: 'dropdown', options: ['Yes', 'No'] },
                     { name: 'Resolution', type: 'dropdown', options: ['HD', 'Full HD', '4K', '8K'] },
                 ],
                 variantAttributes: [
+                    { name: 'Color', description: 'Available color options' },
                     { name: 'Screen Size', description: 'Available size options' },
                     { name: 'Resolution', description: 'HD, Full HD, 4K, 8K variants' }
-                ]
-            },
-            {
-                name: 'Computer Accessories',
-                fields: [
-                    { name: 'Type', type: 'dropdown', options: ['Keyboard', 'Mouse', 'Webcam', 'Speakers', 'Cables', 'Docking Station'] },
-                    { name: 'Connectivity', type: 'dropdown', options: ['Wired', 'Wireless', 'Bluetooth'] },
-                ],
-                variantAttributes: [
-                    { name: 'Color', description: 'Available color options' },
-                    { name: 'Connectivity', description: 'Wired or wireless variants' }
                 ]
             },
             {
                 name: 'Printers',
                 fields: [
                     { name: 'Type', type: 'dropdown', options: ['Inkjet', 'Laser', 'Dot Matrix'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Functions', type: 'dropdown', options: ['Print', 'Print + Scan + Copy'] },
                     { name: 'Connectivity', type: 'dropdown', options: ['USB', 'Wi-Fi', 'Bluetooth'] },
                 ],
@@ -154,11 +154,13 @@ export const Subcategories = [
                 name: 'Monitors',
                 fields: [
                     { name: 'Screen Size', type: 'text', unit: 'inches' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Resolution', type: 'dropdown', options: ['HD', 'Full HD', '2K', '4K'] },
                     { name: 'Refresh Rate', type: 'text', unit: 'Hz' },
                     { name: 'Panel Type', type: 'dropdown', options: ['IPS', 'TN', 'VA'] },
                 ],
                 variantAttributes: [
+                    { name: 'Color', description: 'Available color options' },
                     { name: 'Screen Size', description: 'Available size options' },
                     { name: 'Resolution', description: 'Available resolution variants' },
                     { name: 'Curved', description: 'Flat or curved screen options' }
@@ -168,10 +170,12 @@ export const Subcategories = [
                 name: 'Storage Devices',
                 fields: [
                     { name: 'Type', type: 'dropdown', options: ['HDD', 'SSD', 'Pen Drive', 'Memory Card'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Capacity', type: 'dropdown', options: ['32GB', '64GB', '128GB', '256GB', '512GB', '1TB', '2TB'] },
                     { name: 'Interface', type: 'dropdown', options: ['USB 2.0', 'USB 3.0', 'USB-C', 'SATA', 'NVMe'] },
                 ],
                 variantAttributes: [
+                    { name: 'Color', description: 'Available color options' },
                     { name: 'Capacity', description: 'Available storage sizes' },
                     { name: 'Interface', description: 'Connection type variants' }
                 ]
@@ -180,11 +184,13 @@ export const Subcategories = [
                 name: 'Smart Watches',
                 fields: [
                     { name: 'Dial Shape', type: 'dropdown', options: ['Round', 'Square', 'Rectangular'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Connectivity', type: 'dropdown', options: ['Bluetooth', 'Wi-Fi'] },
                     { name: 'Fitness Features', type: 'dropdown', options: ['Heart Rate', 'SpO2', 'Sleep Tracking', 'Steps Counter'] },
                     { name: 'Battery Life', type: 'text', unit: 'days' },
                 ],
                 variantAttributes: [
+                    { name: 'Color', description: 'Available color options' },
                     { name: 'Strap Color', description: 'Available strap color options' },
                     { name: 'Case Size', description: 'Available case diameter options' }
                 ]
@@ -193,6 +199,7 @@ export const Subcategories = [
                 name: 'Fitness Bands',
                 fields: [
                     { name: 'Display', type: 'dropdown', options: ['AMOLED', 'LCD'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Battery Life', type: 'text', unit: 'days' },
                     { name: 'Water Resistant', type: 'dropdown', options: ['Yes', 'No'] },
                     { name: 'Tracking Features', type: 'dropdown', options: ['Steps', 'Calories', 'Sleep', 'Heart Rate'] },
@@ -206,6 +213,7 @@ export const Subcategories = [
                 name: 'Refrigerators',
                 fields: [
                     { name: 'Capacity', type: 'text', unit: 'Litres' },
+                    { name: 'Color', type: 'text' },
                     { name: 'Door Type', type: 'dropdown', options: ['Single Door', 'Double Door', 'Side by Side', 'French Door'] },
                     { name: 'Defrost Type', type: 'dropdown', options: ['Direct Cool', 'Frost Free'] },
                     { name: 'Star Rating', type: 'dropdown', options: ['2 Star', '3 Star', '4 Star', '5 Star'] },
@@ -219,6 +227,7 @@ export const Subcategories = [
                 name: 'Washing Machines',
                 fields: [
                     { name: 'Type', type: 'dropdown', options: ['Front Load', 'Top Load', 'Semi Automatic'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Capacity', type: 'text', unit: 'Kg' },
                     { name: 'Spin Speed', type: 'text', unit: 'RPM' },
                     { name: 'Star Rating', type: 'dropdown', options: ['3 Star', '4 Star', '5 Star'] },
@@ -232,11 +241,13 @@ export const Subcategories = [
                 name: 'Air Conditioners',
                 fields: [
                     { name: 'Type', type: 'dropdown', options: ['Split', 'Window', 'Portable'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Capacity', type: 'text', unit: 'Tons' },
                     { name: 'Star Rating', type: 'dropdown', options: ['3 Star', '4 Star', '5 Star'] },
                     { name: 'Inverter', type: 'dropdown', options: ['Yes', 'No'] },
                 ],
                 variantAttributes: [
+                    { name: 'Color', description: 'Available color options' },
                     { name: 'Capacity', description: 'Available cooling capacity options' },
                     { name: 'Type', description: 'Split, window or portable variants' }
                 ]
@@ -245,6 +256,7 @@ export const Subcategories = [
                 name: 'Audio Systems',
                 fields: [
                     { name: 'Type', type: 'dropdown', options: ['Home Theater', 'Soundbar', 'Bluetooth Speaker'] },
+                    { name: 'Color', type: 'text' },
                     { name: 'Connectivity', type: 'dropdown', options: ['Bluetooth', 'Wi-Fi', 'Wired'] },
                     { name: 'Output Power', type: 'text', unit: 'Watt' },
                 ],
@@ -256,17 +268,132 @@ export const Subcategories = [
             {
                 name: 'Accessories',
                 fields: [
-                    { name: 'Type', type: 'dropdown', options: ['Charger', 'Power Bank', 'Adapter', 'Screen Protector', 'Phone Case', 'Stylus', 'Mount & Holder'] },
-                    { name: 'Compatibility', type: 'text' },
-                    { name: 'Color', type: 'dropdown', options: ['Black', 'White', 'Blue', 'Red', 'Transparent'] },
-                    { name: 'Material', type: 'dropdown', options: ['Plastic', 'Silicone', 'Metal', 'Leather'] },
-                    { name: 'Connectivity', type: 'dropdown', options: ['USB', 'USB-C', 'Lightning', 'Wireless'] },
-                    { name: 'Fast Charging Supported', type: 'dropdown', options: ['Yes', 'No'] },
+                    {
+                        name: 'Type',
+                        type: 'dropdown',
+                        options: [
+                            'Keyboard',
+                            'Mouse',
+                            'Webcam',
+                            'Speakers',
+                            'Cables',
+                            'Docking Station',
+                            'Charger',
+                            'Power Bank',
+                            'Adapter',
+                            'Screen Protector',
+                            'Phone Case',
+                            'Stylus',
+                            'Mount & Holder',
+                            'Headphones',
+                            'Microphone',
+                            'USB Hub',
+                            'Laptop Stand',
+                            'Cooling Pad'
+                        ]
+                    },
+                    {
+                        name: 'Connectivity',
+                        type: 'dropdown',
+                        options: [
+                            'Wired',
+                            'Wireless',
+                            'Bluetooth',
+                            'USB',
+                            'USB-C',
+                            'Lightning',
+                            'HDMI',
+                            'Thunderbolt',
+                            '3.5mm Audio'
+                        ]
+                    },
+                    {
+                        name: 'Color',
+                        type: 'dropdown',
+                        options: [
+                            'Black',
+                            'White',
+                            'Blue',
+                            'Red',
+                            'Silver',
+                            'Gray',
+                            'Pink',
+                            'Green',
+                            'Gold',
+                            'Transparent',
+                            'Multicolor'
+                        ]
+                    },
+                    {
+                        name: 'Material',
+                        type: 'dropdown',
+                        options: [
+                            'Plastic',
+                            'Silicone',
+                            'Metal',
+                            'Leather',
+                            'Rubber',
+                            'Fabric',
+                            'Wood',
+                            'Carbon Fiber',
+                            'Aluminum'
+                        ]
+                    },
+                    {
+                        name: 'Compatibility',
+                        type: 'text',
+                        description: 'Specific device models this accessory works with'
+                    },
+                    {
+                        name: 'Fast Charging Supported',
+                        type: 'dropdown',
+                        options: ['Yes', 'No']
+                    },
+                    {
+                        name: 'Water Resistance',
+                        type: 'dropdown',
+                        options: ['None', 'IP54', 'IP67', 'IP68']
+                    },
+                    {
+                        name: 'Cable Length',
+                        type: 'dropdown',
+                        options: ['0.5m', '1m', '1.5m', '2m', '3m', '5m']
+                    },
+                    {
+                        name: 'Warranty',
+                        type: 'dropdown',
+                        options: ['None', '6 Months', '1 Year', '2 Years', 'Lifetime']
+                    }
                 ],
                 variantAttributes: [
-                    { name: 'Color', description: 'Available color options' },
-                    { name: 'Compatibility', description: 'Device-specific variants' },
-                    { name: 'Capacity', description: 'For power banks and chargers' }
+                    {
+                        name: 'Color',
+                        description: 'Available color options'
+                    },
+                    {
+                        name: 'Connectivity',
+                        description: 'Wired or wireless variants'
+                    },
+                    {
+                        name: 'Compatibility',
+                        description: 'Device-specific variants'
+                    },
+                    {
+                        name: 'Capacity',
+                        description: 'For power banks and chargers (e.g., 10000mAh)'
+                    },
+                    {
+                        name: 'Size',
+                        description: 'Dimensions or size variants'
+                    },
+                    {
+                        name: 'Weight',
+                        description: 'Weight variants for portable accessories'
+                    },
+                    {
+                        name: 'Pack Quantity',
+                        description: 'Number of items in package'
+                    }
                 ]
             }
         ]
